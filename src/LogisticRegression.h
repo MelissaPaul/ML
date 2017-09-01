@@ -50,14 +50,15 @@ public:
 			seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Evaluator evaluate);
 	seal::Ciphertext** train(int iters, int col, int row,
-			seal::Ciphertext** data, seal::Ciphertext** &theta,
+			seal::Ciphertext** data, seal::Ciphertext** theta,
 			seal::Ciphertext* target, seal::Evaluator evaluate,
 			seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
 			seal::Plaintext alpha);
+
 private:
 	seal::Ciphertext** gradient_descent(int iters, int col, int row,
-			seal::Ciphertext** data, seal::Ciphertext** &theta,
+			seal::Ciphertext** data, seal::Ciphertext** theta,
 			seal::Ciphertext* target, seal::Evaluator evaluate,
 			seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,

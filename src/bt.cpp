@@ -528,17 +528,7 @@ int main() {
 	seal::Decryptor decryptor(parms, s_key);
 
 //#columns, dataset, theta, Evaluator
-	cout << "before theta" << endl;
-// initialize theta for regression and classification with 1 and encrypt it (row x 1)
-	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
 
-	seal::Ciphertext **theta_reg = new seal::Ciphertext*[1];
-	for (int i = 0; i <= test_row_reg; i++) {
-		theta_reg[i] = new seal::Ciphertext[1];
-		theta_reg[i][0] = one_encrypt;
-	}
-
-	cout << "after theta" << endl;
 	seal::Ciphertext ** encoded_train_reg = new seal::Ciphertext*[train_row_reg
 			+ 1];
 	seal::Ciphertext ** encoded_test_reg = new seal::Ciphertext*[test_row_reg
@@ -584,7 +574,7 @@ int main() {
 	}
 
 	//deleting unused transpose of test matrix
-//	for (int i = 0; i <= train_row_reg; i++) {
+//	for (int i = 0; i <= test_row_reg; i++) {
 //		delete[] test_dat_trans_reg[i];
 //	}
 //	delete[] test_dat_trans_reg;
@@ -605,18 +595,40 @@ int main() {
 
 	cout << "before train" << endl;
 
+	cout << "before theta" << endl;
+// initialize theta for regression and classification with 1 and encrypt it (row x 1)
+	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
+	seal::Ciphertext **theta_reg = new seal::Ciphertext*[1];
+//	cout << test_row_reg + 1 << endl;
+	for (int i = 0; i <= test_row_reg; i++) {
+		theta_reg[i] = new seal::Ciphertext[1];
+		//	cout << i << endl;
+		theta_reg[i][0] = one_encrypt;
+		//	cout << "fine" << endl;
+	}
+//	std::fill(theta_reg[0], theta_reg[0] + test_col_reg * (test_row_reg + 1),
+//			one_encrypt);
+//	for (int i = 0; i <= test_row_reg; i++) {
+//		cout << i << endl;
+//		theta_reg[i][0] = one_encrypt;
+//		cout << "inside" << endl;
+//	}
+
+	cout << "after theta" << endl;
+
 	// train the classification model
 	seal::Ciphertext** weights_reg = lr.train(1, train_col_reg, train_row_reg,
 			encoded_train_reg, theta_reg, train_resp_reg, evaluate, fr, a0, a1,
 			a2, minus_one_reg, tr, alpha_reg);
-
+	cout << "after train" << endl;
 	//delete initialized theta
-	delete[] theta_reg[0];
-	delete[] theta_reg;
+//	delete[] theta_reg[0];
+//	delete[] theta_reg;
 
 	//make class predictions
 	seal::Ciphertext* predicitons_reg = lr.predict(test_col_reg, test_row_reg,
 			encoded_test_reg, weights_reg, a0, a1, a2, evaluate);
+	//cout << "predict fone" << endl;
 	double * predictions_reg_encrypted = new double[test_col_reg];
 	int * class_prediction = new int[test_col_reg];
 	for (int i = 0; i < test_col_reg; i++) {
@@ -627,6 +639,8 @@ int main() {
 		} else {
 			class_prediction[i] = 1;
 		}
+		cout << i << endl;
+		cout << class_prediction[i] << endl;
 	}
 
 //regression
