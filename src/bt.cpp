@@ -27,6 +27,7 @@
 #include "bigpolyarray.h"
 #include "chooser.h"
 #include "evaluator.h"
+#include <chrono>
 //#include "LogisticRegression.h"
 // error with constructor when using header file
 #include "LogisticRegression.cpp"
@@ -536,6 +537,7 @@ int main() {
 	seal::Ciphertext* test_resp_reg = new seal::Ciphertext[test_col_reg];
 	seal::Ciphertext* train_resp_reg = new seal::Ciphertext[train_col_reg];
 
+	auto start = chrono::steady_clock::now();
 //	encrypt targets y (1 x columns)
 	for (int i = 0; i < train_col_reg; i++) {
 		//	cout << i << endl;
@@ -544,10 +546,21 @@ int main() {
 		train_resp_reg[i] = t;
 		//	cout << "worked too" << endl;
 	}
+	auto end = chrono::steady_clock::now();
+	auto diffr = end - start;
+	cout << "encrypt train targets "
+			<< chrono::duration<double, milli>(diffr).count() << " ms" << endl;
 	//cout << "train response" << endl;
+	start = chrono::steady_clock::now();
 	for (int i = 0; i < test_col_reg; i++) {
 		test_resp_reg[i] = encrypt_frac(resp_test_reg(i), encryptor, frencoder);
 	}
+	end = chrono::steady_clock::now();
+	diffr = end - start;
+	cout << "encrypt test targets "
+			<< chrono::duration<double, milli>(diffr).count() << " ms" << endl;
+
+	start = chrono::steady_clock::now();
 	//cout << "test response" << endl;
 	for (int i = 0; i < train_col_reg; i++) {
 		encoded_train_reg[i] = new seal::Ciphertext[train_row_reg + 1];
@@ -556,14 +569,19 @@ int main() {
 					encryptor, frencoder);
 		}
 	}
+	end = chrono::steady_clock::now();
+	diffr = end - start;
+	cout << "encrypt train data "
+			<< chrono::duration<double, milli>(diffr).count() << " ms" << endl;
+
 	cout << "before delete" << endl;
 	//deleting unused transpose of train matrix
-//	for (int i = 0; i <= train_row_reg; i++) {
+//	for (int i = 0; i <= train_col_reg; i++) {
 //		cout << i << endl;
 //		delete[] train_dat_trans_reg[i];
 //	}
 //	delete[] train_dat_trans_reg;
-
+	start = chrono::steady_clock::now();
 //	cout << "encoded train" << endl;
 	for (int i = 0; i < test_col_reg; i++) {
 		encoded_test_reg[i] = new seal::Ciphertext[test_row_reg + 1];
@@ -572,6 +590,10 @@ int main() {
 					encryptor, frencoder);
 		}
 	}
+	end = chrono::steady_clock::now();
+	diffr = end - start;
+	cout << "encrypt test data "
+			<< chrono::duration<double, milli>(diffr).count() << " ms" << endl;
 
 	//deleting unused transpose of test matrix
 //	for (int i = 0; i <= test_row_reg; i++) {
@@ -617,20 +639,32 @@ int main() {
 	cout << "after theta" << endl;
 
 	// train the classification model
+	start = chrono::steady_clock::now();
 	seal::Ciphertext** weights_reg = lr.train(1, train_col_reg, train_row_reg,
 			encoded_train_reg, theta_reg, train_resp_reg, evaluate, fr, a0, a1,
 			a2, minus_one_reg, tr, alpha_reg);
+	end = chrono::steady_clock::now();
+	diffr = end - start;
+	cout << "train" << chrono::duration<double, milli>(diffr).count() << " ms"
+			<< endl;
+
 	cout << "after train" << endl;
 	//delete initialized theta
 //	delete[] theta_reg[0];
 //	delete[] theta_reg;
-
+	start = chrono::steady_clock::now();
 	//make class predictions
 	seal::Ciphertext* predicitons_reg = lr.predict(test_col_reg, test_row_reg,
 			encoded_test_reg, weights_reg, a0, a1, a2, evaluate);
+	end = chrono::steady_clock::now();
+	diffr = end - start;
+	cout << "predicition" << chrono::duration<double, milli>(diffr).count()
+			<< " ms" << endl;
+
 	//cout << "predict fone" << endl;
 	double * predictions_reg_encrypted = new double[test_col_reg];
 	int * class_prediction = new int[test_col_reg];
+	start = chrono::steady_clock::now();
 	for (int i = 0; i < test_col_reg; i++) {
 		predictions_reg_encrypted[i] = decrypt_frac(predicitons_reg[i],
 				decryptor, frencoder);
@@ -642,6 +676,10 @@ int main() {
 		cout << i << endl;
 		cout << class_prediction[i] << endl;
 	}
+	end = chrono::steady_clock::now();
+	diffr = end - start;
+	cout << "decrypt test data "
+			<< chrono::duration<double, milli>(diffr).count() << " ms" << endl;
 
 //regression
 

@@ -47,7 +47,7 @@ public:
 	seal::Ciphertext* predict(int col, int row, seal::Ciphertext** data,
 			seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Evaluator evaluate) {
-		seal::Ciphertext *res = new seal::Ciphertext[col];
+		//seal::Ciphertext *res = new seal::Ciphertext[col];
 		seal::Ciphertext *pred = new seal::Ciphertext[col];
 
 		seal::Ciphertext add;
@@ -116,6 +116,9 @@ private:
 //		}
 		seal::Ciphertext* J = new seal::Ciphertext[iterations];
 		for (int i = 0; i < iterations; i++) {
+			J[i] = data[0][0];
+		}
+		for (int i = 0; i < iterations; i++) {
 			seal::Ciphertext *pred = new seal::Ciphertext[col];
 			seal::Ciphertext *diff = new seal::Ciphertext[col];
 
@@ -166,9 +169,11 @@ private:
 				}
 			}
 			cout << "before compute in grAD" << endl;
-			J[i] = compute_cost(col, row, thet, data, target, fr, evaluate, a0,
-					a1, a2, minus, tr);
+			seal::Ciphertext tmp = compute_cost(col, row, thet, data, target,
+					fr, evaluate, a0, a1, a2, minus, tr);
 			cout << "fine compute cost" << endl;
+			J[i] = tmp;
+			cout << "akrigh" << endl;
 		}
 		return thet;
 	}
@@ -230,7 +235,7 @@ private:
 							term1.operator const seal::BigPolyArray &()));
 			res = sub;
 		}
-		//	cout << "log_h works" << endl;
+		cout << "log_h works" << endl;
 		return res;
 	}
 	/*
@@ -284,10 +289,10 @@ private:
 			seal::Plaintext a1, seal::Plaintext a2, seal::Plaintext minus_one) {
 		vector<seal::Ciphertext> v;
 		seal::Ciphertext res;
-	//	cout << "in compuite helper" << endl;
+		//	cout << "in compuite helper" << endl;
 		for (int i = 1; i < col; i++) {
 			// -y(i)
-	//		cout << i << endl;
+			//		cout << i << endl;
 			seal::Ciphertext tmp1 = seal::Ciphertext(
 					evaluate.negate(
 							target[i].operator const seal::BigPolyArray &()));
@@ -332,6 +337,7 @@ private:
 				evaluate.multiply_plain(
 						re.operator const seal::BigPolyArray &(),
 						fr.operator const seal::BigPoly &()));
+		cout << "end compute helper" << endl;
 		return res;
 	}
 	// fr = 1/col
@@ -345,7 +351,7 @@ private:
 		seal::Ciphertext sum;
 		seal::Ciphertext res;
 		vector<seal::Ciphertext> ve;
-	//	cout << "in compute_cost" << endl;
+		//	cout << "in compute_cost" << endl;
 		for (int i = 1; i <= row; i++) {
 			seal::Ciphertext sq = seal::Ciphertext(
 					evaluate.square(
@@ -358,16 +364,17 @@ private:
 		sum = evaluate.add_many(ve);
 		seal::Ciphertext tl = compute_helper(col, row, theta, data, target, fr,
 				evaluate, a0, a1, a2, minus_one);
-	//	cout << "after compujte helper" << endl;
+		//	cout << "after compujte helper" << endl;
 		seal::Ciphertext tl2 = seal::Ciphertext(
 				evaluate.add(tl.operator const seal::BigPolyArray &(),
 						sum.operator const seal::BigPolyArray &()));
-	//	cout << "after add" << endl;
+		//	cout << "after add" << endl;
 		res = seal::Ciphertext(
 				evaluate.multiply_plain(
 						tl2.operator const seal::BigPolyArray &(),
 						tr.operator const seal::BigPoly &()));
-	//	cout << "after multiply plain" << endl;
+		//	cout << "after multiply plain" << endl;
+		cout << "ebd compute cost" << endl;
 		return res;
 	}
 };
