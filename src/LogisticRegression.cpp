@@ -49,12 +49,14 @@ public:
 			seal::Plaintext a2, seal::Evaluator evaluate) {
 		//seal::Ciphertext *res = new seal::Ciphertext[col];
 		seal::Ciphertext *pred = new seal::Ciphertext[col];
-
+	//	cout << "in predict" << endl;
 		seal::Ciphertext add;
 		for (int j = 0; j < col; j++) {
+		//	cout << j << endl;
 			pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate, row,
 					col);
 		}
+	//	cout << "pred fine" << endl;
 		return pred;
 	}
 
@@ -72,7 +74,7 @@ public:
 //		}
 
 		seal::Ciphertext **t = new seal::Ciphertext*[1];
-		cout << "in train" << endl;
+	//	cout << "in train" << endl;
 //		seal::Ciphertext **th = new seal::Ciphertext*[1];
 //		for (int i = 0; i <= row; i++) {
 //			cout << i << endl;
@@ -85,7 +87,7 @@ public:
 
 		seal::Ciphertext **thet = gradient_descent(iters, col, row, data, theta,
 				target, evaluate, fr, a0, a1, a2, minus, tr, alpha);
-		cout << "train works fine" << endl;
+	//	cout << "train works fine" << endl;
 		t = thet;
 		return t;
 	}
@@ -102,7 +104,7 @@ private:
 			seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
 			seal::Plaintext alpha) {
-		cout << "in gradient descent" << endl;
+	//	cout << "in gradient descent" << endl;
 		//	seal::Ciphertext **t_tmp = new seal::Ciphertext*[1];
 		//	cout << row << endl;
 		seal::Ciphertext **thet = new seal::Ciphertext*[1];
@@ -114,10 +116,10 @@ private:
 //			cout << "fine" << endl;
 //			t_tmp[i][0] = t;
 //		}
-		seal::Ciphertext* J = new seal::Ciphertext[iterations];
-		for (int i = 0; i < iterations; i++) {
-			J[i] = data[0][0];
-		}
+	//	seal::Ciphertext* J = new seal::Ciphertext[iterations];
+//		for (int i = 0; i < iterations; i++) {
+//			J[i] = data[0][0];
+//		}
 		for (int i = 0; i < iterations; i++) {
 			seal::Ciphertext *pred = new seal::Ciphertext[col];
 			seal::Ciphertext *diff = new seal::Ciphertext[col];
@@ -168,12 +170,12 @@ private:
 
 				}
 			}
-			cout << "before compute in grAD" << endl;
-			seal::Ciphertext tmp = compute_cost(col, row, thet, data, target,
-					fr, evaluate, a0, a1, a2, minus, tr);
-			cout << "fine compute cost" << endl;
-			J[i] = tmp;
-			cout << "akrigh" << endl;
+			//	cout << "before compute in grAD" << endl;
+			//	seal::Ciphertext tmp = compute_cost(col, row, theta, data, target,
+			//			fr, evaluate, a0, a1, a2, minus, tr);
+			//	cout << "fine compute cost" << endl;
+			//	J[i] = tmp;
+			//	cout << "akrigh" << endl;
 		}
 		return thet;
 	}
@@ -235,7 +237,7 @@ private:
 							term1.operator const seal::BigPolyArray &()));
 			res = sub;
 		}
-		cout << "log_h works" << endl;
+//		cout << "log_h works" << endl;
 		return res;
 	}
 	/*
@@ -337,7 +339,7 @@ private:
 				evaluate.multiply_plain(
 						re.operator const seal::BigPolyArray &(),
 						fr.operator const seal::BigPoly &()));
-		cout << "end compute helper" << endl;
+	//	cout << "end compute helper" << endl;
 		return res;
 	}
 	// fr = 1/col
@@ -374,7 +376,7 @@ private:
 						tl2.operator const seal::BigPolyArray &(),
 						tr.operator const seal::BigPoly &()));
 		//	cout << "after multiply plain" << endl;
-		cout << "ebd compute cost" << endl;
+	//	cout << "ebd compute cost" << endl;
 		return res;
 	}
 };
