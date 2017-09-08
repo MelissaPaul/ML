@@ -107,7 +107,7 @@ private:
      * @param lambda_div: double lambda divided by n_col
      * @return
      */
-    seal::Ciphertext **gradient_descent(int n_col, seal::Ciphertext **&theta,
+    seal::Ciphertext **gradient_descent(int n_col, seal::Ciphertext **theta,
                                         seal::Ciphertext **x, seal::Ciphertext y[], seal::Plaintext alpha,
                                         int iters, seal::Ciphertext *J, seal::Evaluator evaluate, int n_row,
                                         seal::Plaintext text, bool ridge, seal::Plaintext lambda_div);
