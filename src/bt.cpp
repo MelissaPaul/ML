@@ -489,19 +489,15 @@ int main() {
 
 	seal::Ciphertext **encoded_train = new seal::Ciphertext *[train_row + 1];
 	seal::Ciphertext **encoded_test = new seal::Ciphertext *[test_row + 1];
-	seal::Ciphertext *test_resp = new seal::Ciphertext[test_col];
 	cout << "before encrypt" << endl;
-	seal::Ciphertext *train_resp = new seal::Ciphertext[train_col];
 
 	auto start = chrono::steady_clock::now();
 //cout << "test response" << endl;
 	for (int i = 0; i < train_col; i++) {
 		encoded_train[i] = new seal::Ciphertext[train_row + 1];
 		for (int j = 0; j <= train_row; j++) {
-			cout << i << " + " << j << endl;
 			seal::Ciphertext t = encrypt_frac(train_dat_trans[i][j], encryptor,
 					frencoder);
-			cout << "fine" << endl;
 			encoded_train[i][j] = t;
 		}
 	}
@@ -510,14 +506,12 @@ int main() {
 	cout << "encrypt train data "
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
-
+	seal::Ciphertext *train_resp = new seal::Ciphertext[train_col];
 	start = chrono::steady_clock::now();
 
 //	encrypt targets y (1 x columns)
 	for (int i = 0; i < train_col; i++) {
-		//	cout << i << endl;
 		Ciphertext t = encrypt_frac(resp_train(i), encryptor, frencoder);
-		//	cout << "worked" << endl;
 		train_resp[i] = t;
 
 		//	cout << "worked too" << endl;
@@ -528,15 +522,21 @@ int main() {
 	cout << "encrypt train targets "
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
-	seal::Ciphertext *test_train_resp = new seal::Ciphertext[train_col];
-	// temporary soluztion as something changes values inside array
+//	seal::Ciphertext *test_train_resp = new seal::Ciphertext[train_col];
+//	// temporary soluztion as something changes values inside array
 //	for (int i = 0; i < train_col; i++) {
 //		test_train_resp[i] = train_resp[i];
+//		cout << test_train_resp[i].operator seal::BigPolyArray &().coeff_count()
+//				<< endl;
+//		cout
+//				<< test_train_resp[i].operator seal::BigPolyArray &().coeff_bit_count()
+//				<< endl;
 //	}
-
+	seal::Ciphertext *test_resp = new seal::Ciphertext[test_col];
 	start = chrono::steady_clock::now();
 	for (int i = 0; i < test_col; i++) {
-		test_resp[i] = encrypt_frac(resp_test(i), encryptor, frencoder);
+		seal::Ciphertext t = encrypt_frac(resp_test(i), encryptor, frencoder);
+		test_resp[i] = t;
 	}
 	end = chrono::steady_clock::now();
 	diffr = end - start;
@@ -556,6 +556,14 @@ int main() {
 //		delete[] train_dat_trans_reg[i];
 //	}
 //	delete[] train_dat_trans_reg;
+
+//	for (int i = 0; i < train_col; i++) {
+//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_count()
+//				<< endl;
+//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_bit_count()
+//				<< endl;
+//	}
+
 	start = chrono::steady_clock::now();
 
 	for (int i = 0; i < test_col; i++) {
@@ -570,7 +578,12 @@ int main() {
 	cout << "encrypt test data "
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
-
+//	for (int i = 0; i < train_col; i++) {
+//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_count()
+//				<< endl;
+//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_bit_count()
+//				<< endl;
+//	}
 	//learning rate alpha = 0.32
 	double alph = 0.032 / train_col;
 	seal::Plaintext alpha = frencoder.encode(alph);
@@ -588,7 +601,13 @@ int main() {
 
 	cout << "before train" << endl;
 	bool ridge = true;
-
+//	for (int i = 0; i < train_col; i++) {
+//
+//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_count()
+//				<< endl;
+//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_bit_count()
+//				<< endl;
+//	}
 	OwnLinearRegression linreg;
 	start = chrono::steady_clock::now();
 	/* train
