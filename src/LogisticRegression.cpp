@@ -8,24 +8,14 @@
 
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
 #include <sstream>
-#include <bitset>
-#include <cstdlib>
-#include <cstdio>
-#include </usr/include/mlpack/core.hpp>
-#include </usr/include/mlpack/methods/linear_regression/linear_regression.hpp>
 #include "seal.h"
 #include "plaintext.h"
 #include "ciphertext.h"
 #include "encryptor.h"
-#include "encryptionparams.h"
-#include "keygenerator.h"
-#include "evaluationkeys.h"
-#include "bigpoly.h"
+
 #include "biguint.h"
 #include "bigpolyarray.h"
-#include "chooser.h"
 #include "evaluator.h"
 
 using namespace std;
@@ -47,17 +37,17 @@ public:
 	seal::Ciphertext* predict(int col, int row, seal::Ciphertext** data,
 			seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Evaluator evaluate) {
-		//seal::Ciphertext *res = new seal::Ciphertext[col];
-		seal::Ciphertext *pred = new seal::Ciphertext[col];
-	//	cout << "in predict" << endl;
-		seal::Ciphertext add;
+
+        seal::Ciphertext *pred = new seal::Ciphertext[col];
+
+        seal::Ciphertext add;
 		for (int j = 0; j < col; j++) {
-		//	cout << j << endl;
-			pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate, row,
+
+            pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate, row,
 					col);
 		}
-	//	cout << "pred fine" << endl;
-		return pred;
+
+        return pred;
 	}
 
 	seal::Ciphertext** train(int iters, int col, int row,
@@ -66,29 +56,15 @@ public:
 			seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
 			seal::Plaintext alpha) {
-//		for (int i = 0; i <= row; i++) {
-//			cout << theta[i][0].operator seal::BigPolyArray &().coeff_count();
-//			cout
-//					<< theta[i][0].operator seal::BigPolyArray &().coeff_bit_count();
-//
-//		}
 
-		seal::Ciphertext **t = new seal::Ciphertext*[1];
-	//	cout << "in train" << endl;
-//		seal::Ciphertext **th = new seal::Ciphertext*[1];
-//		for (int i = 0; i <= row; i++) {
-//			cout << i << endl;
-//			th[i] = new seal::Ciphertext[1];
-//			seal::Ciphertext tht = theta[i][0];
-//			cout << "train2" << endl;
-//			th[i][0] = tht;
-//			cout << "train3" << endl;
-//		}
 
-		seal::Ciphertext **thet = gradient_descent(iters, col, row, data, theta,
+        seal::Ciphertext **t = new seal::Ciphertext *[1];
+
+
+        seal::Ciphertext **thet = gradient_descent(iters, col, row, data, theta,
 				target, evaluate, fr, a0, a1, a2, minus, tr, alpha);
-	//	cout << "train works fine" << endl;
-		t = thet;
+
+        t = thet;
 		return t;
 	}
 
@@ -104,78 +80,63 @@ private:
 			seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
 			seal::Plaintext alpha) {
-	//	cout << "in gradient descent" << endl;
-		//	seal::Ciphertext **t_tmp = new seal::Ciphertext*[1];
-		//	cout << row << endl;
-		seal::Ciphertext **thet = new seal::Ciphertext*[1];
-//		for (int i = 0; i <= row; i++) {
-//			cout << i << endl;
-//			t_tmp[i] = new seal::Ciphertext[1];
-//			cout << "worked" << endl;
-//			seal::Ciphertext t = theta[i][0];
-//			cout << "fine" << endl;
-//			t_tmp[i][0] = t;
-//		}
-	//	seal::Ciphertext* J = new seal::Ciphertext[iterations];
-//		for (int i = 0; i < iterations; i++) {
-//			J[i] = data[0][0];
-//		}
-		for (int i = 0; i < iterations; i++) {
+
+        seal::Ciphertext **thet = new seal::Ciphertext *[1];
+
+        //	seal::Ciphertext* J = new seal::Ciphertext[iterations];
+
+        for (int i = 0; i < iterations; i++) {
 			seal::Ciphertext *pred = new seal::Ciphertext[col];
 			seal::Ciphertext *diff = new seal::Ciphertext[col];
 
 			for (int j = 0; j < col; j++) {
-				//		cout << j << endl;
-				pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate,
+
+                pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate,
 						row, col);
 
 				diff[j] = seal::Ciphertext(
 						evaluate.sub(
 								target[j].operator const seal::BigPolyArray &(),
 								pred[j].operator const seal::BigPolyArray &()));
-				//	cout << "sub fine" << endl;
-			}
+
+            }
 			seal::Ciphertext *res = new seal::Ciphertext[row + 1];
 			seal::Ciphertext *r = new seal::Ciphertext[row + 1];
 
-			//	cout << "sub total" << endl;
-			for (int k = 0; k <= row; k++) {
-				//	cout << "row " << k << endl;
-				thet[k] = new seal::Ciphertext[1];
+
+            for (int k = 0; k <= row; k++) {
+
+                thet[k] = new seal::Ciphertext[1];
 				for (int j = 0; j < col; j++) {
-					//		cout << "col " << j << endl;
-					res[k] =
+
+                    res[k] =
 							seal::Ciphertext(
 									evaluate.relinearize(
 											seal::Ciphertext(
 													evaluate.multiply(
 															diff[k].operator const seal::BigPolyArray &(),
 															data[j][k].operator const seal::BigPolyArray &())).operator const seal::BigPolyArray &()));
-					//	cout << "multiply fine" << endl;
-					r[k] =
+
+                    r[k] =
 							seal::Ciphertext(
 									evaluate.relinearize(
 											seal::Ciphertext(
 													evaluate.multiply_plain(
 															res[k].operator const seal::BigPolyArray &(),
 															alpha)).operator const seal::BigPolyArray &()));
-					//	cout << "multiply plain fine" << endl;
 
-					thet[k][0] =
+
+                    thet[k][0] =
 							seal::Ciphertext(
 									evaluate.add(
 											theta[k][0].operator const seal::BigPolyArray &(),
 											r[k].operator const seal::BigPolyArray &()));
-					//	cout << "add fine" << endl;
 
-				}
+
+                }
 			}
-			//	cout << "before compute in grAD" << endl;
-			//	seal::Ciphertext tmp = compute_cost(col, row, theta, data, target,
+            //	J[i] = compute_cost(col, row, theta, data, target,
 			//			fr, evaluate, a0, a1, a2, minus, tr);
-			//	cout << "fine compute cost" << endl;
-			//	J[i] = tmp;
-			//	cout << "akrigh" << endl;
 		}
 		return thet;
 	}
@@ -187,10 +148,9 @@ private:
 			seal::Plaintext a2, seal::Evaluator evaluate, int row, int col) {
 		seal::Ciphertext res;
 		vector<seal::Ciphertext> ve;
-//		cout << "in log_h" << endl;
-		for (int i = 0; i <= row; i++) {
+
+        for (int i = 0; i <= row; i++) {
 			// theta * x
-			//	cout << i << endl;
 			seal::Ciphertext t =
 					seal::Ciphertext(
 							evaluate.relinearize(
@@ -199,9 +159,7 @@ private:
 													data[i].operator const seal::BigPolyArray &(),
 													theta[i][0].operator const seal::BigPolyArray &())).operator const seal::BigPolyArray &()));
 			ve.emplace_back(t);
-			//	cout << "worked" << endl;
 		}
-		//cout << "theta*x works" << endl;
 		seal::Ciphertext tmp = evaluate.add_many(ve);
 		// term1 = (theta*x) * a1
 		seal::Ciphertext term1 = seal::Ciphertext(
@@ -237,7 +195,6 @@ private:
 							term1.operator const seal::BigPolyArray &()));
 			res = sub;
 		}
-//		cout << "log_h works" << endl;
 		return res;
 	}
 	/*
@@ -339,7 +296,6 @@ private:
 				evaluate.multiply_plain(
 						re.operator const seal::BigPolyArray &(),
 						fr.operator const seal::BigPoly &()));
-	//	cout << "end compute helper" << endl;
 		return res;
 	}
 	// fr = 1/col
@@ -353,30 +309,23 @@ private:
 		seal::Ciphertext sum;
 		seal::Ciphertext res;
 		vector<seal::Ciphertext> ve;
-		//	cout << "in compute_cost" << endl;
 		for (int i = 1; i <= row; i++) {
 			seal::Ciphertext sq = seal::Ciphertext(
 					evaluate.square(
 							theta[i][0].operator const seal::BigPolyArray &()));
-			//	cout << i << endl;
 			ve.emplace_back(sq);
 
 		}
-//		cout << "sum fine" << endl;
 		sum = evaluate.add_many(ve);
 		seal::Ciphertext tl = compute_helper(col, row, theta, data, target, fr,
 				evaluate, a0, a1, a2, minus_one);
-		//	cout << "after compujte helper" << endl;
 		seal::Ciphertext tl2 = seal::Ciphertext(
 				evaluate.add(tl.operator const seal::BigPolyArray &(),
 						sum.operator const seal::BigPolyArray &()));
-		//	cout << "after add" << endl;
 		res = seal::Ciphertext(
 				evaluate.multiply_plain(
 						tl2.operator const seal::BigPolyArray &(),
 						tr.operator const seal::BigPoly &()));
-		//	cout << "after multiply plain" << endl;
-	//	cout << "ebd compute cost" << endl;
 		return res;
 	}
 };
