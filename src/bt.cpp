@@ -10,7 +10,6 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <sstream>
-#include <bitset>
 #include <cstdlib>
 #include <cstdio>
 #include </usr/include/mlpack/core.hpp>
@@ -461,6 +460,7 @@ int main() {
 	seal::Encryptor encryptor(parms, p_key);
 	seal::Decryptor decryptor(parms, s_key);
 
+	seal::Ciphertext **encoded_train = new seal::Ciphertext *[train_row + 1];
 //	transpose data matrices
 	double **train_dat_trans = new double *[train_row + 1];
 	double **test_dat_trans = new double *[test_row + 1];
@@ -487,8 +487,6 @@ int main() {
 	cout << "transpose" << endl;
 //const seal::EncryptionParameters par = parms;
 
-	seal::Ciphertext **encoded_train = new seal::Ciphertext *[train_row + 1];
-	seal::Ciphertext **encoded_test = new seal::Ciphertext *[test_row + 1];
 	cout << "before encrypt" << endl;
 
 	auto start = chrono::steady_clock::now();
@@ -563,7 +561,7 @@ int main() {
 //		cout << train_resp[i].operator seal::BigPolyArray &().coeff_bit_count()
 //				<< endl;
 //	}
-
+	seal::Ciphertext **encoded_test = new seal::Ciphertext *[test_row + 1];
 	start = chrono::steady_clock::now();
 
 	for (int i = 0; i < test_col; i++) {
@@ -599,15 +597,8 @@ int main() {
 
 	}
 
-	cout << "before train" << endl;
 	bool ridge = true;
-//	for (int i = 0; i < train_col; i++) {
-//
-//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_count()
-//				<< endl;
-//		cout << train_resp[i].operator seal::BigPolyArray &().coeff_bit_count()
-//				<< endl;
-//	}
+
 	OwnLinearRegression linreg;
 	start = chrono::steady_clock::now();
 	/* train
@@ -623,7 +614,6 @@ int main() {
 //	delete[] theta[0];
 //	delete[] theta;
 
-	cout << "after train" << endl;
 	seal::Ciphertext **weights = new seal::Ciphertext *[1];
 	weights = trained;
 //	cout << "pred" << endl;

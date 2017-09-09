@@ -56,7 +56,6 @@ private:
 		if (ridge) {
 			vector<seal::Ciphertext> rid;
 			for (int i = 0; i <= n_row; i++) {
-				cout << i << "in ridge" << endl;
 				seal::Ciphertext rid_square =
 						seal::Ciphertext(
 								evaluate.relinearize(
@@ -65,23 +64,19 @@ private:
 														theta[i][0].operator const seal::BigPolyArray &()))));
 				rid.emplace_back(rid_square);
 			}
-			cout << "after in ridge" << endl;
 			seal::Ciphertext regularizer_tmp = evaluate.add_many(rid);
 			seal::Ciphertext regularizer =
 					seal::Ciphertext(
 							evaluate.multiply_plain(
 									regularizer_tmp.operator const seal::BigPolyArray &(),
 									lambda_div.operator const seal::BigPoly &()));
-			cout << "before sqaure in ridge" << endl;
 			for (int i = 0; i < n_col; i++) {
-				cout << i << "sqer" << endl;
 				sq_errors[i] =
 						seal::Ciphertext(
 								evaluate.add(
 										sq_errors[i].operator const seal::BigPolyArray &(),
 										regularizer.operator const seal::BigPolyArray &()));
 			}
-			cout << "after ridge" << endl;
 		}
 
 		vector<seal::Ciphertext> t;
@@ -181,7 +176,7 @@ private:
 													evaluate.multiply(
 															diff[k].operator const seal::BigPolyArray &(),
 															x[j][k].operator const seal::BigPolyArray &())).operator const seal::BigPolyArray &()));
-					cout << "fine" << endl;
+
 					//if ridge regression add regularizer
 					if (ridge && k != 0) {
 						seal::Ciphertext rid_tmp =
@@ -197,7 +192,7 @@ private:
 												res[k].operator const seal::BigPolyArray &(),
 												rid_tmp.operator const seal::BigPolyArray &()));
 					}
-					cout << "fine" << endl;
+
 					r[k] =
 							seal::Ciphertext(
 									evaluate.relinearize(
@@ -205,23 +200,22 @@ private:
 													evaluate.multiply_plain(
 															res[k].operator const seal::BigPolyArray &(),
 															alpha)).operator const seal::BigPolyArray &()));
-					cout << "fine" << endl;
+
 					thet[k][0] =
 							seal::Ciphertext(
 									evaluate.sub(
 											theta[k][0].operator const seal::BigPolyArray &(),
 											r[k].operator const seal::BigPolyArray &()));
-					cout << "calculated rest " << k << " + " << j << endl;
 
 				}
-				cout << "in between" << endl;
+
 			}
-			cout << "before compute cost" << endl;
+
 //			J[i] = compute_cost(n_row, n_col, x, y, theta, evaluate, text,
 //					ridge, lambda_div);
-//			cout << "calculated J " << endl;
 
 		}
+
 		return thet;
 	}
 
