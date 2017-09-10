@@ -225,7 +225,9 @@ public:
 			seal::Ciphertext **x, seal::Ciphertext y[], seal::Ciphertext **th,
 			int n_row, seal::Plaintext text, seal::Evaluator evaluate,
 			bool ridge, seal::Plaintext lambda_div) {
-		seal::Ciphertext J[iterations];
+		seal::Ciphertext *J;
+		J = new seal::Ciphertext[iterations];
+		
 		seal::Ciphertext **theta = new seal::Ciphertext *[1];
 		seal::Ciphertext **tht = new seal::Ciphertext *[1];
 		for (int i = 0; i <= n_row; i++) {
