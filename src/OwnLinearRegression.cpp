@@ -53,6 +53,7 @@ private:
 
 		}
 		// creates sq_errors as a vector to add all entries of the data at once
+		// additional computations for ridge regression
 		if (ridge) {
 			vector<seal::Ciphertext> rid;
 			for (int i = 0; i <= n_row; i++) {
@@ -78,6 +79,7 @@ private:
 										regularizer.operator const seal::BigPolyArray &()));
 			}
 		}
+// end of additional computations of ridge regression
 
 		vector<seal::Ciphertext> t;
 
@@ -98,7 +100,7 @@ private:
 	seal::Ciphertext h(seal::Ciphertext x[], seal::Ciphertext **theta,
 			int n_row, seal::Evaluator evaluate) {
 		seal::Ciphertext *res = new seal::Ciphertext[n_row + 1];
-
+// theta_i * x_i
 		seal::Ciphertext tmp =
 				seal::Ciphertext(
 						evaluate.relinearize(
@@ -107,7 +109,7 @@ private:
 												(**theta).operator const seal::BigPolyArray &(),
 												x[0].operator const seal::BigPolyArray &())).operator const seal::BigPolyArray &()));
 		*res = tmp;
-// multiply theta with corresponding x
+// multiply theta with corresponding x and relinearize
 		for (int i = 1; i <= n_row; i++) {
 			seal::Ciphertext tmo = seal::Ciphertext(
 					evaluate.multiply(
@@ -128,7 +130,7 @@ private:
 		return r;
 	}
 
-// loop over all rows: prediction for one row
+// loop over all columns: prediction for one col
 	seal::Ciphertext *calculate_predictions(int n_row, int n_col,
 			seal::Ciphertext **x, seal::Ciphertext **theta,
 			seal::Evaluator evaluate) {
@@ -167,7 +169,8 @@ private:
 			// Plaintext plain = 1/n_row
 			for (int k = 0; k <= n_row; k++) {
 
-				thet[k] = new seal::Ciphertext[1];
+				//(h(x) -y)* x^j_k
+ 				thet[k] = new seal::Ciphertext[1];
 				for (int j = 0; j < n_col; j++) {
 					res[k] =
 							seal::Ciphertext(
@@ -192,6 +195,7 @@ private:
 												res[k].operator const seal::BigPolyArray &(),
 												rid_tmp.operator const seal::BigPolyArray &()));
 					}
+					//(h(x) -y)* x^j_k * alpha
 
 					r[k] =
 							seal::Ciphertext(
@@ -200,6 +204,7 @@ private:
 													evaluate.multiply_plain(
 															res[k].operator const seal::BigPolyArray &(),
 															alpha)).operator const seal::BigPolyArray &()));
+					//((h(x) -y)* x^j_k * alpha)- theta^k_0
 
 					thet[k][0] =
 							seal::Ciphertext(
@@ -225,15 +230,14 @@ public:
 			seal::Ciphertext **x, seal::Ciphertext y[], seal::Ciphertext **th,
 			int n_row, seal::Plaintext text, seal::Evaluator evaluate,
 			bool ridge, seal::Plaintext lambda_div) {
-		seal::Ciphertext *J;
-		J = new seal::Ciphertext[iterations];
-		
+		seal::Ciphertext J[iterations];
 		seal::Ciphertext **theta = new seal::Ciphertext *[1];
 		seal::Ciphertext **tht = new seal::Ciphertext *[1];
 		for (int i = 0; i <= n_row; i++) {
 			tht[i] = new seal::Ciphertext[1];
 			tht[i][0] = th[i][0];
 		}
+		//currently not working, assignment fails
 		seal::Ciphertext **thet = gradient_descent(n_col, tht, x, y, alpha,
 				iterations, J, evaluate, n_row, text, ridge, lambda_div);
 		theta = thet;
@@ -250,6 +254,7 @@ public:
 			tht[i] = new seal::Ciphertext[1];
 			tht[i][0] = theta[i][0];
 		}
+		// prediction done in helper function
 		for (int i = 0; i < n_col; i++) {
 			seal::Ciphertext t = h(*(x + i), tht, n_row, evaluate);
 			res[i] = t;

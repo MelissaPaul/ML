@@ -33,23 +33,25 @@ public:
 		this->target = target;
 	}
 
-	// class 1 if log(h(x)) >= log(thresh) else class 0
+	// make predictions
 	seal::Ciphertext* predict(int col, int row, seal::Ciphertext** data,
 			seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Evaluator evaluate) {
 
-        seal::Ciphertext *pred = new seal::Ciphertext[col];
+		seal::Ciphertext *pred = new seal::Ciphertext[col];
 
-        seal::Ciphertext add;
+		seal::Ciphertext add;
+		//use helper function to predict
 		for (int j = 0; j < col; j++) {
 
-            pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate, row,
+			pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate, row,
 					col);
 		}
 
-        return pred;
+		return pred;
 	}
 
+	// train using gradient descent
 	seal::Ciphertext** train(int iters, int col, int row,
 			seal::Ciphertext** data, seal::Ciphertext** theta,
 			seal::Ciphertext* target, seal::Evaluator evaluate,
@@ -57,14 +59,12 @@ public:
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
 			seal::Plaintext alpha) {
 
+		seal::Ciphertext **t = new seal::Ciphertext *[1];
 
-        seal::Ciphertext **t = new seal::Ciphertext *[1];
-
-
-        seal::Ciphertext **thet = gradient_descent(iters, col, row, data, theta,
+		seal::Ciphertext **thet = gradient_descent(iters, col, row, data, theta,
 				target, evaluate, fr, a0, a1, a2, minus, tr, alpha);
 
-        t = thet;
+		t = thet;
 		return t;
 	}
 
@@ -73,7 +73,8 @@ private:
 	seal::Ciphertext** data;
 	seal::Ciphertext* target;
 
-	//theta[j] = theta[j] + alpha (y[i] - log_h(x[i])* x[i][j]
+	//theta_j = theta_j + alpha (y_i - log_h(x_i))* x_i^j
+	// log_h returns prediction
 	seal::Ciphertext** gradient_descent(int iterations, int col, int row,
 			seal::Ciphertext** data, seal::Ciphertext** theta,
 			seal::Ciphertext* target, seal::Evaluator evaluate,
@@ -81,17 +82,17 @@ private:
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
 			seal::Plaintext alpha) {
 
-        seal::Ciphertext **thet = new seal::Ciphertext *[1];
+		seal::Ciphertext **thet = new seal::Ciphertext *[1];
 
-        //	seal::Ciphertext* J = new seal::Ciphertext[iterations];
+		//	seal::Ciphertext* J = new seal::Ciphertext[iterations];
 
-        for (int i = 0; i < iterations; i++) {
+		for (int i = 0; i < iterations; i++) {
 			seal::Ciphertext *pred = new seal::Ciphertext[col];
 			seal::Ciphertext *diff = new seal::Ciphertext[col];
-
+// y_i - log_h(x_i)
 			for (int j = 0; j < col; j++) {
 
-                pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate,
+				pred[j] = log_h(false, data[j], theta, a0, a1, a2, evaluate,
 						row, col);
 
 				diff[j] = seal::Ciphertext(
@@ -99,49 +100,46 @@ private:
 								target[j].operator const seal::BigPolyArray &(),
 								pred[j].operator const seal::BigPolyArray &()));
 
-            }
+			}
 			seal::Ciphertext *res = new seal::Ciphertext[row + 1];
 			seal::Ciphertext *r = new seal::Ciphertext[row + 1];
 
+			for (int k = 0; k <= row; k++) {
 
-            for (int k = 0; k <= row; k++) {
-
-                thet[k] = new seal::Ciphertext[1];
+				thet[k] = new seal::Ciphertext[1];
 				for (int j = 0; j < col; j++) {
-
-                    res[k] =
+					//(y_i - log_h(x_i))* x_i^j
+					res[k] =
 							seal::Ciphertext(
 									evaluate.relinearize(
 											seal::Ciphertext(
 													evaluate.multiply(
 															diff[k].operator const seal::BigPolyArray &(),
 															data[j][k].operator const seal::BigPolyArray &())).operator const seal::BigPolyArray &()));
-
-                    r[k] =
+					// alpha (y_i - log_h(x_i))* x_i^j
+					r[k] =
 							seal::Ciphertext(
 									evaluate.relinearize(
 											seal::Ciphertext(
 													evaluate.multiply_plain(
 															res[k].operator const seal::BigPolyArray &(),
 															alpha)).operator const seal::BigPolyArray &()));
-
-
-                    thet[k][0] =
+					//theta_j = theta_j + alpha (y_i - log_h(x_i))* x_i^j
+					thet[k][0] =
 							seal::Ciphertext(
 									evaluate.add(
 											theta[k][0].operator const seal::BigPolyArray &(),
 											r[k].operator const seal::BigPolyArray &()));
 
-
-                }
+				}
 			}
-            //	J[i] = compute_cost(col, row, theta, data, target,
+			//	J[i] = compute_cost(col, row, theta, data, target,
 			//			fr, evaluate, a0, a1, a2, minus, tr);
 		}
 		return thet;
 	}
 
-//computes:	a0 -a1*(theta* x) + a2*(theta* x)² for a single data point;
+//computes:	a_0 -a_1*(theta * x) + a_2*(theta * x)² for a single data point;
 //if neg=true compute log(1-h(x))
 	seal::Ciphertext log_h(bool neg, seal::Ciphertext* data,
 			seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
@@ -149,7 +147,7 @@ private:
 		seal::Ciphertext res;
 		vector<seal::Ciphertext> ve;
 
-        for (int i = 0; i <= row; i++) {
+		for (int i = 0; i <= row; i++) {
 			// theta * x
 			seal::Ciphertext t =
 					seal::Ciphertext(
@@ -161,7 +159,7 @@ private:
 			ve.emplace_back(t);
 		}
 		seal::Ciphertext tmp = evaluate.add_many(ve);
-		// term1 = (theta*x) * a1
+		// term1 = (theta*x) * a_1
 		seal::Ciphertext term1 = seal::Ciphertext(
 				evaluate.multiply_plain(
 						tmp.operator const seal::BigPolyArray &(), a1));
@@ -170,13 +168,13 @@ private:
 				evaluate.relinearize(
 						evaluate.square(
 								tmp.operator const seal::BigPolyArray &())));
-		//term2 = (theta*x)² * a2
+		//term2 = (theta*x)² * a_2
 		seal::Ciphertext term2 = seal::Ciphertext(
 				evaluate.relinearize(
 						evaluate.multiply_plain(
 								sq_tmp.operator const seal::BigPolyArray &(),
 								a2)));
-		// a0 + term 2
+		// a_0 + term 2
 		seal::Ciphertext add = seal::Ciphertext(
 				evaluate.add_plain(term2.operator const seal::BigPolyArray &(),
 						a0));
@@ -189,7 +187,7 @@ private:
 		}
 		// log(h(x))
 		else {
-			// a0- term1 + term2
+			// a_0- term1 + term2
 			seal::Ciphertext sub = seal::Ciphertext(
 					evaluate.sub(add.operator const seal::BigPolyArray &(),
 							term1.operator const seal::BigPolyArray &()));
@@ -248,10 +246,10 @@ private:
 			seal::Plaintext a1, seal::Plaintext a2, seal::Plaintext minus_one) {
 		vector<seal::Ciphertext> v;
 		seal::Ciphertext res;
-		//	cout << "in compuite helper" << endl;
+
 		for (int i = 1; i < col; i++) {
 			// -y(i)
-			//		cout << i << endl;
+
 			seal::Ciphertext tmp1 = seal::Ciphertext(
 					evaluate.negate(
 							target[i].operator const seal::BigPolyArray &()));

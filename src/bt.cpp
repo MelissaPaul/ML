@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include </usr/include/mlpack/core.hpp>
-#include </usr/include/mlpack/methods/linear_regression/linear_regression.hpp>
+//#include </usr/include/mlpack/methods/linear_regression/linear_regression.hpp>
 #include "seal.h"
 #include "plaintext.h"
 #include "ciphertext.h"
@@ -36,7 +36,7 @@
 using namespace std;
 using namespace seal;
 using namespace mlpack;
-using namespace mlpack::regression;
+//using namespace mlpack::regression;
 
 //encrypts an integer by turning it into Plaintext (polynomial) and then Ciphertext
 Ciphertext encrypt(const int input, Encryptor encryptor,
@@ -128,6 +128,8 @@ double decrypt_frac(Ciphertext encrypted, Decryptor decryptor,
  }
  return ss.str();
  }*/
+
+
 //LinearRegression::LinearRegression(seal::Ciphertext x[][],
 //		seal::Ciphertext y[], int n_col) {
 //	this->x = x;
@@ -146,6 +148,7 @@ double decrypt_frac(Ciphertext encrypted, Decryptor decryptor,
 
 int main() {
 
+	//uncomment when run logistic regression///////
 //set parameters for encryption
 //	seal::EncryptionParameters parms;
 //	parms.set_poly_modulus("1x^4096 + 1");
@@ -170,7 +173,9 @@ int main() {
 //	train_dat_reg.shed_row(0);
 //	test_dat_reg.shed_row(0);
 //
-////number of columns and rows for training and test set
+
+
+	////number of columns and rows for training and test set
 //	int train_col_reg = static_cast<int>(train_dat_reg.n_cols);
 //	int train_row_reg = static_cast<int>(train_dat_reg.n_rows);
 //	int test_col_reg = static_cast<int>(test_dat_reg.n_cols);
@@ -374,8 +379,10 @@ int main() {
 //			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 //			<< endl;
 
-//regression
+//regression ends here ///////////////////
 
+
+	// linear regression starts //////////
 	seal::EncryptionParameters parms;
 	parms.set_poly_modulus("1x^4096 + 1");
 	parms.set_coeff_modulus(
@@ -401,7 +408,7 @@ int main() {
 	data::Load("parkinson_test.csv", test_dat);
 	arma::mat tmp = train_dat.t();
 	arma::mat tmp2 = test_dat.t();
-	resp_train = tmp.col(5);
+	resp_train = tmp.col(5); // label of train data
 	resp_test = tmp2.col(5);
 
 //	train_dat.shed_row(train_dat.n_rows - 1);
@@ -450,6 +457,7 @@ int main() {
 	int test_col = static_cast<int>(test_dat.n_cols);
 	int test_row = static_cast<int>(test_dat.n_rows);
 
+	// generate keys in order to relinearize ciphertexts
 	generator.generate_evaluation_keys(train_col);
 	const seal::EvaluationKeys evkey = generator.evaluation_keys();
 	seal::FractionalEncoder frencoder(parms.plain_modulus(),
@@ -460,6 +468,8 @@ int main() {
 	seal::Encryptor encryptor(parms, p_key);
 	seal::Decryptor decryptor(parms, s_key);
 
+
+	// encoding and encrpypting the polynomials
 	seal::Ciphertext **encoded_train = new seal::Ciphertext *[train_row + 1];
 //	transpose data matrices
 	double **train_dat_trans = new double *[train_row + 1];
@@ -590,6 +600,7 @@ int main() {
 	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
 	double lambda = 1.5 / (1.0 * train_col);
 	seal::Plaintext lambda_div = frencoder.encode(lambda);
+	// initialize the weights
 	seal::Ciphertext **theta = new seal::Ciphertext *[1];
 	for (int i = 0; i <= train_row; i++) {
 		theta[i] = new seal::Ciphertext[1];
@@ -629,7 +640,7 @@ int main() {
 			<< " min" << endl;
 	cout << "prediction in main" << endl;
 	double *dec = new double[test_col];
-// compare prediction on unencrypted and encrypted data
+// later: compare prediction on unencrypted and encrypted data
 	start = chrono::steady_clock::now();
 	for (int i = 0; i < test_col; i++) {
 		double d = decrypt_frac((*(pred + i)), decryptor, frencoder);
