@@ -3,11 +3,11 @@
 #define OWNLINEARREGRESSION_H_
 
 
-#include "seal.h"
-#include "plaintext.h"
-#include "ciphertext.h"
-#include "encryptor.h"
-#include "evaluator.h"
+#include "Seal/seal.h"
+#include "Seal/plaintext.h"
+#include "Seal/ciphertext.h"
+#include "Seal/encryptor.h"
+#include "Seal/evaluator.h"
 
 class OwnLinearRegression {
 public:

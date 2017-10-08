@@ -9,14 +9,14 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include "seal.h"
-#include "plaintext.h"
-#include "ciphertext.h"
-#include "encryptor.h"
+#include "Seal/seal.h"
+#include "Seal/plaintext.h"
+#include "Seal/ciphertext.h"
+#include "Seal/encryptor.h"
 
-#include "biguint.h"
-#include "bigpolyarray.h"
-#include "evaluator.h"
+#include "Seal/biguint.h"
+#include "Seal/bigpolyarray.h"
+#include "Seal/evaluator.h"
 
 using namespace std;
 
@@ -48,6 +48,26 @@ public:
 					col);
 		}
 
+		return pred;
+	}
+
+	seal::Ciphertext** predict_multiclass(int classes, int col, int row,
+			seal::Ciphertext** data, seal::Ciphertext** theta,
+			seal::Plaintext a0, seal::Plaintext a1, seal::Plaintext a2,
+			seal::Evaluator evaluate) {
+
+		seal::Ciphertext **pred = new seal::Ciphertext*[classes];
+
+		seal::Ciphertext add;
+		//use helper function to predict
+		for (int i = 0; i < classes; i++) {
+
+			for (int j = 0; j < col; j++) {
+				pred[j] = new seal::Ciphertext[classes];
+				pred[j][i] = log_h(false, data[j], theta, a0, a1, a2, evaluate,
+						row, col);
+			}
+		}
 		return pred;
 	}
 

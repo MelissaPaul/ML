@@ -4,18 +4,18 @@
 #include <sstream>
 #include <cstdlib>
 #include <cstdio>
-#include "seal.h"
-#include "plaintext.h"
-#include "ciphertext.h"
-#include "encryptor.h"
-#include "encryptionparams.h"
-#include "keygenerator.h"
-#include "evaluationkeys.h"
-#include "bigpoly.h"
-#include "biguint.h"
-#include "bigpolyarray.h"
-#include "chooser.h"
-#include "evaluator.h"
+#include "Seal/seal.h"
+#include "Seal/plaintext.h"
+#include "Seal/ciphertext.h"
+#include "Seal/encryptor.h"
+#include "Seal/encryptionparams.h"
+#include "Seal/keygenerator.h"
+#include "Seal/evaluationkeys.h"
+#include "Seal/bigpoly.h"
+#include "Seal/biguint.h"
+#include "Seal/bigpolyarray.h"
+#include "Seal/chooser.h"
+#include "Seal/evaluator.h"
 
 using namespace std;
 

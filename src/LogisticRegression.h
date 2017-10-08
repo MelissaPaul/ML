@@ -15,10 +15,10 @@
 // Copyright   :
 // Description : Implementation of logistic regression using homomorphic encryption
 //============================================================================
-#include "seal.h"
-#include "plaintext.h"
-#include "ciphertext.h"
-#include "evaluator.h"
+#include "Seal/seal.h"
+#include "Seal/plaintext.h"
+#include "Seal/ciphertext.h"
+#include "Seal/evaluator.h"
 
 using namespace std;
 
@@ -45,6 +45,22 @@ public:
 	seal::Ciphertext *predict(int col, int row, seal::Ciphertext **data,
 			seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Evaluator evaluate);
+
+	/**
+		 * @param classes: # of classes to be considered
+		 * @param col: # of columns
+		 * @param row: # of rows
+		 * @param data: encrypted data (two dimensional array)
+		 * @param theta: encrypted weights (two dimensional array)
+		 * @param a0:
+		 * @param a1:
+		 * @param a2:
+		 * @param evaluate: seal::Evaluator
+		 * @return
+		 */
+		seal::Ciphertext *predict_multiclass(int classes, int col, int row, seal::Ciphertext **data,
+				seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
+				seal::Plaintext a2, seal::Evaluator evaluate);
 
 	/**
 	 *
