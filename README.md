@@ -17,4 +17,4 @@ For further information on how to install mlpack including Boost C++ Libraries s
 
 # **Running the programm**
 I used Eclipse Oxygen as my development environment.
-To compile the programm in the command line I used gcc: "g++ *.cpp util/*.cpp -o bt -std=c++11 -larmadillo -lmlpack -lboost_serialization" and executed the resulting script with "./bt".
+To compile the programm in the command line I used gcc: "g++ *.cpp Seal/*.cpp Seal/util/*.cpp -o bt -std=c++11 -larmadillo -lmlpack -lboost_serialization" and executed the resulting script with "./bt".
