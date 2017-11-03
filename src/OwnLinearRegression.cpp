@@ -148,11 +148,12 @@ private:
 //perform gradien descent
 	seal::Ciphertext **gradient_descent(int n_col, seal::Ciphertext **theta,
 			seal::Ciphertext **x, seal::Ciphertext y[], seal::Plaintext alpha,
-			int iters, seal::Ciphertext *J, seal::Evaluator evaluate, int n_row,
+			int iters, seal::Evaluator evaluate, int n_row,
 			seal::Plaintext text, bool ridge, seal::Plaintext lambda_div) {
-		seal::Ciphertext ** thet = new seal::Ciphertext*[1];
-
+		seal::Ciphertext ** thet = new seal::Ciphertext*[n_row + 1];
+		seal::Ciphertext* J = new seal::Ciphertext[iters];
 		for (int i = 0; i < iters; i++) {
+			cout << i << endl;
 			seal::Ciphertext *predictions = calculate_predictions(n_row, n_col,
 					x, theta, evaluate);
 
@@ -170,7 +171,7 @@ private:
 			for (int k = 0; k <= n_row; k++) {
 
 				//(h(x) -y)* x^j_k
- 				thet[k] = new seal::Ciphertext[1];
+				thet[k] = new seal::Ciphertext[1];
 				for (int j = 0; j < n_col; j++) {
 					res[k] =
 							seal::Ciphertext(
@@ -230,17 +231,18 @@ public:
 			seal::Ciphertext **x, seal::Ciphertext y[], seal::Ciphertext **th,
 			int n_row, seal::Plaintext text, seal::Evaluator evaluate,
 			bool ridge, seal::Plaintext lambda_div) {
-		seal::Ciphertext J[iterations];
-		seal::Ciphertext **theta = new seal::Ciphertext *[1];
-		seal::Ciphertext **tht = new seal::Ciphertext *[1];
-		for (int i = 0; i <= n_row; i++) {
-			tht[i] = new seal::Ciphertext[1];
-			tht[i][0] = th[i][0];
-		}
+//		seal::Ciphertext J[iterations];
+//		seal::Ciphertext **theta = new seal::Ciphertext *[1];
+//		seal::Ciphertext **tht = new seal::Ciphertext *[1];
+//		for (int i = 0; i <= n_row; i++) {
+//			tht[i] = new seal::Ciphertext[1];
+//			tht[i][0] = th[i][0];
+//		}
 		//currently not working, assignment fails
-		seal::Ciphertext **thet = gradient_descent(n_col, tht, x, y, alpha,
-				iterations, J, evaluate, n_row, text, ridge, lambda_div);
-		theta = thet;
+		seal::Ciphertext **theta = new seal::Ciphertext*[n_row + 1];
+		theta = gradient_descent(n_col, th, x, y, alpha, iterations, evaluate,
+				n_row, text, ridge, lambda_div);
+
 		return theta;
 	}
 
@@ -249,18 +251,13 @@ public:
 			seal::Ciphertext **theta, seal::Evaluator evaluate) {
 		seal::Ciphertext *res = new seal::Ciphertext[n_col];
 
-		seal::Ciphertext **tht = new seal::Ciphertext *[1];
-		for (int i = 0; i <= n_row; i++) {
-			tht[i] = new seal::Ciphertext[1];
-			tht[i][0] = theta[i][0];
-		}
 		// prediction done in helper function
 		for (int i = 0; i < n_col; i++) {
-			seal::Ciphertext t = h(*(x + i), tht, n_row, evaluate);
+		seal::Ciphertext t = h(*(x + i), theta, n_row, evaluate);
 			res[i] = t;
 		}
-		seal::Ciphertext *r = new seal::Ciphertext[n_col];
-		r = res;
-		return r;
+//		seal::Ciphertext *r = new seal::Ciphertext[n_col];
+//		r = res;
+		return res;
 	}
 };

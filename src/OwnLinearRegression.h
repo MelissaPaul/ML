@@ -99,7 +99,6 @@ private:
      * @param y: encrypted targets (one dimensional array)
      * @param alpha: learning rate as double
      * @param iters: # of iterations for gradient descent
-     * @param J: stores result of cost function (one dimensional array)
      * @param evaluate: seal::Evaluator
      * @param n_row: # of columns
      * @param text:((1.0 / (2.0 * n_col)) encoded as seal::Plaintext
@@ -109,7 +108,7 @@ private:
      */
     seal::Ciphertext **gradient_descent(int n_col, seal::Ciphertext **theta,
                                         seal::Ciphertext **x, seal::Ciphertext y[], seal::Plaintext alpha,
-                                        int iters, seal::Ciphertext *J, seal::Evaluator evaluate, int n_row,
+                                        int iters, seal::Evaluator evaluate, int n_row,
                                         seal::Plaintext text, bool ridge, seal::Plaintext lambda_div);
 };
 
