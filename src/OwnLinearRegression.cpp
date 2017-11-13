@@ -126,7 +126,6 @@ private:
 		}
 // add all ciphertexts
 		seal::Ciphertext r = evaluate.add_many(t);
-
 		return r;
 	}
 
@@ -139,19 +138,20 @@ private:
 		seal::Ciphertext tmp = h(x[0], theta, n_row, evaluate);
 		*predictions = tmp;
 		for (int i = 1; i < n_col; i++) {
+			cout << i << endl;
 			*(predictions + i) = h(x[i], theta, n_row, evaluate);
 		}
 		return predictions;
 	}
 
 //paramter: pre initialized theta with 1
-//perform gradien descent
+//perform gradient	 descent
 	seal::Ciphertext **gradient_descent(int n_col, seal::Ciphertext **theta,
 			seal::Ciphertext **x, seal::Ciphertext y[], seal::Plaintext alpha,
 			int iters, seal::Evaluator evaluate, int n_row,
 			seal::Plaintext text, bool ridge, seal::Plaintext lambda_div) {
 		seal::Ciphertext ** thet = new seal::Ciphertext*[n_row + 1];
-		seal::Ciphertext* J = new seal::Ciphertext[iters];
+		//	seal::Ciphertext* J = new seal::Ciphertext[iters];
 		for (int i = 0; i < iters; i++) {
 			cout << i << endl;
 			seal::Ciphertext *predictions = calculate_predictions(n_row, n_col,
@@ -253,7 +253,7 @@ public:
 
 		// prediction done in helper function
 		for (int i = 0; i < n_col; i++) {
-		seal::Ciphertext t = h(*(x + i), theta, n_row, evaluate);
+			seal::Ciphertext t = h(*(x + i), theta, n_row, evaluate);
 			res[i] = t;
 		}
 //		seal::Ciphertext *r = new seal::Ciphertext[n_col];

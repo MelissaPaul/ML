@@ -47,47 +47,53 @@ public:
 			seal::Plaintext a2, seal::Evaluator evaluate);
 
 	/**
-		 * @param classes: # of classes to be considered
-		 * @param col: # of columns
-		 * @param row: # of rows
-		 * @param data: encrypted data (two dimensional array)
-		 * @param theta: encrypted weights (two dimensional array)
-		 * @param a0:
-		 * @param a1:
-		 * @param a2:
-		 * @param evaluate: seal::Evaluator
-		 * @return
-		 */
-		seal::Ciphertext *predict_multiclass(int classes, int col, int row, seal::Ciphertext **data,
-				seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
-				seal::Plaintext a2, seal::Evaluator evaluate);
-		/**
-		 *
-		 * @param iters: # of iterations for gradient descent
-		 * @param col: # of columns
-		 * @param row: # of rows
-		 * @param data: encrypted data (two dimensional array)
-		 * @param theta: encrypted weights (two dimensional array)
-		 * @param target_0: encrypted targets (one dimensional array)
-		 * @param target_1: encrypted targets (one dimensional array)
-		 * @param target_2: encrypted targets (one dimensional array)
-		 * @param evaluate: seal::Evaluator
-		 * @param fr
-		 * @param a0
-		 * @param a1
-		 * @param a2
-		 * @param minus: -1 encoded as seal::Plaintext
-		 * @param tr
-		 * @param alpha: learning rate as double
-		 * @param classes: # of classes
-		 * @return
-		 */
-		seal::Ciphertext** train_multiclass(int iters, int col, int row,
-				seal::Ciphertext** data, seal::Ciphertext** theta,
-				seal::Ciphertext* target_0,seal::Ciphertext* target_1,seal::Ciphertext* target_2, seal::Evaluator evaluate,
-				seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
-				seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
-				seal::Plaintext alpha, int classes);
+	 * @param classes: # of classes to be considered
+	 * @param col: # of columns
+	 * @param row: # of rows
+	 * @param data: encrypted data (two dimensional array)
+	 * @param theta: encrypted weights (two dimensional array)
+	 * @param a0:
+	 * @param a1:
+	 * @param a2:
+	 * @param evaluate: seal::Evaluator
+	 * @return
+	 */
+//		seal::Ciphertext *predict_multiclass(int classes, int col, int row, seal::Ciphertext **data,
+//				seal::Ciphertext** theta, seal::Plaintext a0, seal::Plaintext a1,
+//				seal::Plaintext a2, seal::Evaluator evaluate);
+	double** predict_multiclass(int classes, int col, int row, double** data);
+
+	seal::Ciphertext** before_pred(seal::Ciphertext** data,
+			seal::Ciphertext** theta, int col, int row, int classes,
+			seal::Evaluator evaluate);
+	/**
+	 *
+	 * @param iters: # of iterations for gradient descent
+	 * @param col: # of columns
+	 * @param row: # of rows
+	 * @param data: encrypted data (two dimensional array)
+	 * @param theta: encrypted weights (two dimensional array)
+	 * @param target_0: encrypted targets (one dimensional array)
+	 * @param target_1: encrypted targets (one dimensional array)
+	 * @param target_2: encrypted targets (one dimensional array)
+	 * @param evaluate: seal::Evaluator
+	 * @param fr
+	 * @param a0
+	 * @param a1
+	 * @param a2
+	 * @param minus: -1 encoded as seal::Plaintext
+	 * @param tr
+	 * @param alpha: learning rate as double
+	 * @param classes: # of classes
+	 * @return
+	 */
+	seal::Ciphertext** train_multiclass(int iters, int col, int row,
+			seal::Ciphertext** data, seal::Ciphertext** theta,
+			seal::Ciphertext* target_0, seal::Ciphertext* target_1,
+			seal::Ciphertext* target_2, seal::Evaluator evaluate,
+			seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
+			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
+			seal::Plaintext alpha, int classes);
 	/**
 	 *
 	 * @param iters: # of iterations for gradient descent
@@ -114,6 +120,9 @@ public:
 			seal::Plaintext alpha);
 
 private:
+
+	seal::Ciphertext compute_sum(int k, int row, seal::Ciphertext* data,
+			seal::Ciphertext** theta, seal::Evaluator evaluate);
 
 	/**
 	 *
@@ -163,7 +172,8 @@ private:
 	 */
 	seal::Ciphertext **gradient_descent_multiclass(int iters, int col, int row,
 			seal::Ciphertext **data, seal::Ciphertext **theta,
-			seal::Ciphertext *target_0,seal::Ciphertext *target_1,seal::Ciphertext *target_2, seal::Evaluator evaluate,
+			seal::Ciphertext *target_0, seal::Ciphertext *target_1,
+			seal::Ciphertext *target_2, seal::Evaluator evaluate,
 			seal::Plaintext fr, seal::Plaintext a0, seal::Plaintext a1,
 			seal::Plaintext a2, seal::Plaintext minus, seal::Plaintext tr,
 			seal::Plaintext alpha, int classes);
@@ -200,7 +210,8 @@ private:
 	 */
 	seal::Ciphertext log_h_multiclass(bool neg, seal::Ciphertext *data,
 			seal::Ciphertext **theta, seal::Plaintext a0, seal::Plaintext a1,
-			seal::Plaintext a2, seal::Evaluator evaluate, int row, int col, int classes);
+			seal::Plaintext a2, seal::Evaluator evaluate, int row, int col,
+			int classes);
 	/**
 	 *
 	 * @param j

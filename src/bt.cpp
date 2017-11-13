@@ -34,12 +34,9 @@
 //#include "OwnLinearRegression.h"
 #include "OwnLinearRegression.cpp"
 
-//TODO inclusion of header files; deletion of unsued arrays, error: corrputed size vs. previous size in training methods as well as prediction in multiclass classification
-
 using namespace std;
 using namespace seal;
 using namespace mlpack;
-//using namespace mlpack::regression;
 
 //encrypts an integer by turning it into Plaintext (polynomial) and then Ciphertext
 Ciphertext encrypt(const int input, Encryptor encryptor,
@@ -59,81 +56,22 @@ Ciphertext encrypt_frac(double input, Encryptor encryptor,
 
 // decrypts given ciphertext by turning it into Plaintext and then integer
 int decrypt(Ciphertext encrypted, Decryptor decryptor, IntegerEncoder encoder) {
-	cout << "decryptor" << endl;
 	BigPoly decrypted = decryptor.decrypt(
 			encrypted.operator const seal::BigPolyArray &());
 	int decryptt = encoder.decode_int32(decrypted);
-	cout << "int" << endl;
 	return decryptt;
 }
 
 // decrypt given Ciphertext to double
 double decrypt_frac(Ciphertext encrypted, Decryptor decryptor,
 		FractionalEncoder encoder) {
-	//cout << "decryptor" << endl;
 	BigPoly decrypted = decryptor.decrypt(
 			encrypted.operator const seal::BigPolyArray &());
-//	cout << "Plaintext" << endl;
 	double decryptt = encoder.decode(decrypted);
-//	cout << "int" << endl;
 	return decryptt;
-	// Decode results.
 }
 
-////perform linear regression
-
-//arma::vec reg_lin_reg(arma::mat data, arma::vec responses, double lambda) {
-//
-////	// perform linear regression; lambda = 0.5 for ridge regression; 0.0 for linear regression
-//	LinearRegression lr(data, responses, lambda);
-//	arma::vec parameters = lr.Parameters();
-////
-//	arma::mat train_data = data.submat(0, 0, 3, 11);
-//	arma::vec train_target = responses.subvec(0, 11);
-//	arma::mat test_data = data.submat(0, 11, 3, 22);
-//	arma::vec test_target = responses.subvec(11, 22);
-////	lr.Train(train_data, train_target, false, );
-//	arma::vec predictions;
-//	lr.Predict(data, predictions);
-//	return predictions;
-//}
-
-//Ciphertext* reg_lin_reg_enc(Ciphertext[][23] encoded, double lambda) {
-//	//	// perform linear regression; lambda = 0.5 for ridge regression; 0.0 for linear regression
-//	LinearRegression lr(data, responses, lambda);
-//	arma::vec parameters = lr.Parameters();
-//	//
-//	arma::mat train_data = data.submat(0, 0, 3, 11);
-//	arma::vec train_target = responses.subvec(0, 11);
-//	arma::mat test_data = data.submat(0, 11, 3, 22);
-//	arma::vec test_target = responses.subvec(11, 22);
-//	//	lr.Train(train_data, train_target, false, );
-//	arma::vec predictions;
-//	lr.Predict(data, predictions);
-//	return predictions;
-//}
-
-/*int* string2ascii(string input) {
- int* ptr = new int[input.length() + 1];
- for (int i = 0; i < input.length(); i++) {
- ptr[i] = (int) input[i];
- }
- ptr[input.length()] = -1;
- return ptr;
- }
-
- string ascii2string(int *ptr) {
- int length = sizeof(ptr) / sizeof(ptr[0]);
- stringstream ss;
- while (*(ptr) != -1) {
- ss << (char) *(ptr);
- cout << (char) *(ptr) << endl;
- ptr++;
- }
- return ss.str();
- }*/
-
-//uncomment when running binary logistic regression///////
+//binary logistic regression//
 void fun1() {
 
 	//set parameters for encryption
@@ -145,7 +83,6 @@ void fun1() {
 	parms.set_decomposition_bit_count(58);
 	parms.validate();
 
-	// logistic regression
 	//read in data for classification
 	arma::mat train_dat_reg;
 	arma::vec resp_train_reg;
@@ -166,24 +103,6 @@ void fun1() {
 	int test_col_reg = static_cast<int>(test_dat_reg.n_cols);
 	int test_row_reg = static_cast<int>(test_dat_reg.n_rows);
 
-//	//	transpose data matrices
-//	double **train_dat_trans_reg = new double*[train_row_reg + 1];
-//	double ** test_dat_trans_reg = new double*[test_row_reg + 1];
-//	for (int i = 0; i < train_col_reg; i++) {
-//		train_dat_trans_reg[i] = new double[train_row_reg + 1];
-//		train_dat_trans_reg[i][0] = 1;
-//		for (int j = 1; j <= train_row_reg; j++) {
-//			train_dat_trans_reg[i][j] = train_dat_reg(j - 1, i);
-//		}
-//	}
-//	for (int i = 0; i < test_col_reg; i++) {
-//		test_dat_trans_reg[i] = new double[test_row_reg + 1];
-//		test_dat_trans_reg[i][0] = 1;
-//		for (int j = 1; j <= test_row_reg; j++) {
-//			test_dat_trans_reg[i][j] = test_dat_reg(j - 1, i);
-//		}
-//	}
-
 	//Generate Keys
 	seal::KeyGenerator generator(parms);
 	generator.generate();
@@ -200,13 +119,13 @@ void fun1() {
 	seal::Encryptor encryptor(parms, p_key);
 	seal::Decryptor decryptor(parms, s_key);
 
-	//#columns, dataset, theta, Evaluator
-
+// encrypt given data
 	seal::Ciphertext ** encoded_train_reg = new seal::Ciphertext*[train_col_reg];
 	seal::Ciphertext ** encoded_test_reg = new seal::Ciphertext*[test_col_reg];
 	seal::Ciphertext* test_resp_reg = new seal::Ciphertext[test_col_reg];
 	seal::Ciphertext* train_resp_reg = new seal::Ciphertext[train_col_reg];
 
+/// encrypt train targets
 	auto start = chrono::steady_clock::now();
 	//	encrypt targets y (1 x columns)
 	for (int i = 0; i < train_col_reg; i++) {
@@ -219,6 +138,7 @@ void fun1() {
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
 
+	// encrypt test targets
 	start = chrono::steady_clock::now();
 	for (int i = 0; i < test_col_reg; i++) {
 		test_resp_reg[i] = encrypt_frac(resp_test_reg(i), encryptor, frencoder);
@@ -229,6 +149,7 @@ void fun1() {
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
 
+	// encrypt train data
 	start = chrono::steady_clock::now();
 	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
 	for (int i = 0; i < train_col_reg; i++) {
@@ -245,12 +166,7 @@ void fun1() {
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
 
-	// deleting unused transpose of train matrix
-	// deleting of Ciphertext arrays is not working anywhere at the moment
-	// for (int i = 0; i <= train_col_reg; i++) {
-	// delete[] train_dat_trans_reg[i];
-	// }
-	//	delete[] train_dat_trans_reg;
+// encrypt test data
 	start = chrono::steady_clock::now();
 
 	for (int i = 0; i < test_col_reg; i++) {
@@ -267,15 +183,8 @@ void fun1() {
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
 
-	//deleting unused transpose of test matrix
-	//	for (int i = 0; i <= test_row_reg; i++) {
-	//		delete[] test_dat_trans_reg[i];
-	//	}
-	//	delete[] test_dat_trans_reg;
-
-	// training rate alpha
-	double alph_reg = 0.32;
-	// tr = lambda/2*col, lambda security parameter?
+// intialize training constants, e.g., learning rate and regularization coefficient
+	double alph_reg = 0.005;
 	double lambda_reg = 0.4;
 	seal::Plaintext fr = frencoder.encode(1 / (1.0 * train_col_reg));
 	seal::Plaintext a0 = frencoder.encode(-0.714761);
@@ -284,10 +193,9 @@ void fun1() {
 	seal::Plaintext minus_one_reg = frencoder.encode(-1.0);
 	seal::Plaintext tr = frencoder.encode(lambda_reg / (2.0 * train_col_reg));
 	seal::Plaintext alpha_reg = frencoder.encode(alph_reg);
-	LogisticRegression lr; // = LogisticRegression::LogisticRegression();
+	LogisticRegression lr;
 
-	// initialize theta for regression and classification with 1 and encrypt it (row x 1)
-
+	// initialize weights for classification with 1 and encrypt it (row x 1)
 	seal::Ciphertext **theta_reg = new seal::Ciphertext*[train_row_reg + 1];
 
 	for (int i = 0; i <= train_row_reg; i++) {
@@ -312,9 +220,8 @@ void fun1() {
 	//	delete[] theta_reg[0];
 	//	delete[] theta_reg;
 
+	//make binary class predictions
 	start = chrono::steady_clock::now();
-
-	// //make binary class predictions
 	seal::Ciphertext* predictions_reg = new seal::Ciphertext[test_col_reg];
 	predictions_reg = lr.predict(test_col_reg, test_row_reg, encoded_test_reg,
 			weights_reg, a0, a1, a2, evaluate);
@@ -323,7 +230,6 @@ void fun1() {
 	cout << "prediction" << chrono::duration<double, ratio<60>>(diffr).count()
 			<< " min" << endl;
 
-	//cout << "predict fone" << endl;
 	double * predictions_reg_encrypted = new double[test_col_reg];
 	int * class_prediction = new int[test_col_reg];
 	start = chrono::steady_clock::now();
@@ -335,7 +241,6 @@ void fun1() {
 		} else {
 			class_prediction[i] = 1;
 		}
-		//cout << i << endl;
 		cout << class_prediction[i] << endl;
 	}
 	end = chrono::steady_clock::now();
@@ -346,7 +251,7 @@ void fun1() {
 
 }
 
-// uncomment when running multiclass logistic regression
+//multiclass logistic regression//
 void fun2() {
 	//set parameters for encryption
 	seal::EncryptionParameters parms;
@@ -357,23 +262,24 @@ void fun2() {
 	parms.set_decomposition_bit_count(58);
 	parms.validate();
 
-	// initialize random nubmer generator
+// initialize random number generator
 	random_device rd;
 	mt19937 rng(rd());
 
 	// logistic regression
 	//read in data for classification
-	arma::mat train_dat_reg(5, 101);
+	arma::mat train_dat_reg(7, 111);
 	arma::vec resp_train_reg;
 	arma::mat test_dat_reg;
 	arma::vec resp_test_reg;
 
-	data::Load("iris.csv", test_dat_reg);
+	data::Load("verebral.csv", test_dat_reg);
 
-	for (int i = 0; i < 101; i++) {
-		uniform_int_distribution<int> uni(1, 149 - i);
+	// split training and testing set
+	for (int i = 0; i < 111; i++) {
+		uniform_int_distribution<int> uni(1, 309 - i);
 		int random_integer = uni(rng);
-		for (int j = 0; j < 5; j++) {
+		for (int j = 0; j < 7; j++) {
 			double tmp = test_dat_reg(j, random_integer);
 			train_dat_reg(j, i) = tmp;
 		}
@@ -387,10 +293,11 @@ void fun2() {
 	train_dat_reg.shed_row(train_dat_reg.n_rows - 1);
 	test_dat_reg.shed_row(test_dat_reg.n_rows - 1);
 
-	data::Save("traintar.csv", resp_train_reg);
-	data::Save("testtr.csv", resp_test_reg);
-	data::Save("traindat.csv", train_dat_reg);
-	data::Save("test.csv", test_dat_reg);
+	// Save test and training set in respective files
+//	data::Save("traintar_ver.csv", resp_train_reg);
+//	data::Save("testtr_ver.csv", resp_test_reg);
+//	data::Save("traindat_ver.csv", train_dat_reg);
+//	data::Save("test_ver.csv", test_dat_reg);
 
 	//number of columns and rows for training and test set
 	int train_col_reg = static_cast<int>(train_dat_reg.n_cols);
@@ -411,24 +318,24 @@ void fun2() {
 			parms.poly_modulus(), 64, 32, 3);
 	seal::IntegerEncoder encoder(parms.plain_modulus());
 	seal::Evaluator evaluate(parms, evkey);
-	//seal::Evaluator evaluate(par);
 	seal::Encryptor encryptor(parms, p_key);
 	seal::Decryptor decryptor(parms, s_key);
 
 	//#columns, dataset, theta, Evaluator
-
+	int k = 3;
 	seal::Ciphertext ** encoded_train_reg = new seal::Ciphertext*[train_col_reg];
 	seal::Ciphertext ** encoded_test_reg = new seal::Ciphertext*[test_col_reg];
 	seal::Ciphertext* test_resp_reg = new seal::Ciphertext[test_col_reg];
 	seal::Ciphertext* train_resp_reg_0 = new seal::Ciphertext[train_col_reg];
 	seal::Ciphertext* train_resp_reg_1 = new seal::Ciphertext[train_col_reg];
 	seal::Ciphertext* train_resp_reg_2 = new seal::Ciphertext[train_col_reg];
+
+	//	encrypt targets y (1 x columns)
 	auto start = chrono::steady_clock::now();
 	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
 	seal::Ciphertext zero_encrypt = encrypt_frac(0.0, encryptor, frencoder);
-	//	encrypt targets y (1 x columns)
+
 	for (int i = 0; i < train_col_reg; i++) {
-		// Ciphertext t = encrypt_frac(resp_train_reg(i), encryptor, frencoder);
 		if (resp_train_reg(i) == 0) {
 			train_resp_reg_0[i] = one_encrypt;
 			train_resp_reg_1[i] = zero_encrypt;
@@ -445,6 +352,7 @@ void fun2() {
 
 		}
 	}
+
 	auto end = chrono::steady_clock::now();
 	auto diffr = end - start;
 	cout << "encrypt train targets "
@@ -477,7 +385,6 @@ void fun2() {
 	<< chrono::duration<double, ratio<1>>(diffr).count() << " s" << endl;
 
 	start = chrono::steady_clock::now();
-	//	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
 	for (int i = 0; i < test_col_reg; i++) {
 		encoded_test_reg[i] = new seal::Ciphertext[test_row_reg + 1];
 		encoded_test_reg[i][0] = one_encrypt;
@@ -492,9 +399,8 @@ void fun2() {
 
 	<< chrono::duration<double, ratio<1>>(diffr).count() << " s" << endl;
 
-	// training rate alpha
+	// initialize constants for training phase, e.g., training rate alpha and regularization coefficient lambda
 	double alph_reg = 0.05;
-	// tr = lambda/2*col, lambda security parameter?
 	double lambda_reg = 0.4;
 	seal::Plaintext fr = frencoder.encode(1 / (1.0 * train_col_reg));
 	seal::Plaintext a0 = frencoder.encode(-0.714761);
@@ -503,127 +409,134 @@ void fun2() {
 	seal::Plaintext minus_one_reg = frencoder.encode(-1.0);
 	seal::Plaintext tr = frencoder.encode(lambda_reg / (2.0 * train_col_reg));
 	seal::Plaintext alpha_reg = frencoder.encode(alph_reg);
-	LogisticRegression lr; // = LogisticRegression::LogisticRegression();
+	LogisticRegression lr;
 
-	// initialize theta for regression and classification with 1 and encrypt it (row x 1)
+	// initialize theta for classification with 1 and encrypt it (row x 1)
 
 	seal::Ciphertext **theta_reg = new seal::Ciphertext*[test_row_reg + 1];
 
 //	for (int i = 0; i <= test_row_reg; i++) {
-//		theta_reg[i] = new seal::Ciphertext[1];
-//		theta_reg[i][0] = one_encrypt;
+//		theta_reg[i] = new seal::Ciphertext[3];
+//		for (int j = 0; j < 3; j++) {
+//			theta_reg[i][j] = one_encrypt;
+//		}
 //
 //	}
-
+//
 	for (int i = 0; i <= test_row_reg; i++) {
-		theta_reg[i] = new seal::Ciphertext[3];
-		for (int j = 0; j < 3; j++) {
-			theta_reg[i][j] = one_encrypt;
-		}
+		theta_reg[i] = new seal::Ciphertext[k];
+		for (int j = 0; j < k; j++) {
+			//theta_reg[i][j] = one_encrypt;
+			if (i == 0) {
+				theta_reg[i][j] = encrypt_frac(-6.79e+18, encryptor, frencoder);
+			}
+			if (i == 1) {
+				theta_reg[i][0] = encrypt_frac(-1.81e+18, encryptor, frencoder);
+				theta_reg[i][1] = encrypt_frac(-1.81e+18, encryptor, frencoder);
+				theta_reg[i][2] = encrypt_frac(-1.81e+18, encryptor, frencoder);
+			}
+			if (i == 2) {
+				theta_reg[i][0] = encrypt_frac(-2.16e+18, encryptor, frencoder);
+				theta_reg[i][1] = encrypt_frac(-2.16e+18, encryptor, frencoder);
+				theta_reg[i][2] = encrypt_frac(-2.16e+18, encryptor, frencoder);
+			}
+			if (i == 3) {
+				theta_reg[i][0] = encrypt_frac(3.26e+18, encryptor, frencoder);
+				theta_reg[i][1] = encrypt_frac(3.26e+18, encryptor, frencoder);
+				theta_reg[i][2] = encrypt_frac(3.26e+18, encryptor, frencoder);
+			}
+			if (i == 4) {
+				theta_reg[i][0] = encrypt_frac(-6.63e+18, encryptor, frencoder);
+				theta_reg[i][1] = encrypt_frac(-6.63e+18, encryptor, frencoder);
+				theta_reg[i][2] = encrypt_frac(-6.63e+18, encryptor, frencoder);
+			}
+			if (i == 5) {
+				theta_reg[i][0] = encrypt_frac(-2.19e+18, encryptor, frencoder);
+				theta_reg[i][1] = encrypt_frac(-2.19e+18, encryptor, frencoder);
+				theta_reg[i][2] = encrypt_frac(-2.19e+18, encryptor, frencoder);
+			}
+			if (i == 6) {
+				theta_reg[i][0] = encrypt_frac(-8.71e+18, encryptor, frencoder);
+				theta_reg[i][1] = encrypt_frac(-8.71e+18, encryptor, frencoder);
+				theta_reg[i][2] = encrypt_frac(-8.71e+18, encryptor, frencoder);
+			}
 
+		}
 	}
-	// train the classification model
+//	}
+// train the classification model
 	start = chrono::steady_clock::now();
 	seal::Ciphertext **weights_reg = new seal::Ciphertext*[test_row_reg + 1];
 	weights_reg = lr.train_multiclass(15, train_col_reg, train_row_reg,
 			encoded_train_reg, theta_reg, train_resp_reg_0, train_resp_reg_1,
 			train_resp_reg_2, evaluate, fr, a0, a1, a2, minus_one_reg, tr,
-			alpha_reg, 3);
+			alpha_reg, k);
 	end = chrono::steady_clock::now();
 	diffr = end - start;
 	cout << "train" << chrono::duration<double, ratio<60>>(diffr).count()
 			<< " min" << endl;
-	for (int i = 0; i <= train_row_reg; i++) {
-		for (int j = 0; j < 3; j++) {
-			cout << decrypt_frac(weights_reg[i][j], decryptor, frencoder)
-					<< endl;
-		}
-	}
-	//delete initialized theta
-	//	delete[] theta_reg[0];
-	//	delete[] theta_reg;
 
-	start = chrono::steady_clock::now();
+//delete initialized theta
+//	delete[] theta_reg[0];
+//	delete[] theta_reg;
+
 	//make multiclass predictions
-
-	int k = 3;
-	seal::Ciphertext** predictions_reg = new seal::Ciphertext*[test_col_reg];
-	predictions_reg = lr.predict_multiclass(k, test_col_reg, test_row_reg,
-			encoded_test_reg, weights_reg, a0, a1, a2, evaluate);
-	//	seal::Ciphertext** predictions_reg = new seal::Ciphertext*[test_col_reg];
-	//	predictions_reg = lr.predict_multiclass(k, test_col_reg, test_row_reg,
-	//			encoded_test_reg, theta_reg, a0, a1, a2, evaluate);
-	end = chrono::steady_clock::now();
-	diffr = end - start;
-	cout << "prediction " << chrono::duration<double, ratio<60>>(diffr).count()
-			<< " min" << endl;
-
-	double ** predictions_reg_encrypted = new double*[test_col_reg];
-	int * class_prediction = new int[test_col_reg];
 	start = chrono::steady_clock::now();
-	for (int j = 0; j < test_col_reg; j++) {
-		predictions_reg_encrypted[j] = new double[k];
-		for (int i = 0; i < k; i++) {
-			predictions_reg_encrypted[j][i] = decrypt_frac(
-					predictions_reg[j][i], decryptor, frencoder);
+	seal::Ciphertext** predictions_reg = new seal::Ciphertext*[test_col_reg];
 
+	predictions_reg = lr.before_pred(encoded_test_reg, weights_reg,
+			test_col_reg, test_row_reg, k, evaluate);
+
+	// decrypt the sum over weights and data points
+	double** pred_dec = new double*[test_col_reg];
+
+	for (int i = 0; i < test_col_reg; i++) {
+		pred_dec[i] = new double[k];
+		for (int j = 0; j < k; j++) {
+			pred_dec[i][j] = decrypt_frac(predictions_reg[i][j], decryptor,
+					frencoder);
 		}
 	}
-	// make multiclass predictions: take maximum of all the classifiers (One-vs-all)
+	// array to store result of prediction for each data point and classifier
+	double** act_pred = new double*[test_col_reg];
+	act_pred = lr.predict_multiclass(k, test_col_reg, test_row_reg, pred_dec);
+
+	int * class_prediction = new int[test_col_reg];
+
+// make multiclass predictions: take maximum of all the classifiers (One-vs-all)
 	for (int i = 0; i < test_col_reg; i++) {
-		double max = predictions_reg_encrypted[i][0];
-//		cout << " 0 " << max << endl;
+		double max = act_pred[i][0];
 		int cl = 0;
 		for (int j = 1; j < k; j++) {
-			if (predictions_reg_encrypted[i][j] > max) {
-				//		cout << j << " " << max << endl;
-				max = predictions_reg_encrypted[i][j];
+			if (act_pred[i][j] > max) {
+				max = act_pred[i][j];
 				cl = j;
-				//		cout << "pred class " << cl << endl;
 			}
 			if (j == k - 1) {
 				class_prediction[i] = cl;
-				//	cout << "end pred class " << cl << endl;
 			}
 		}
 	}
 
 	end = chrono::steady_clock::now();
 	diffr = end - start;
-	cout << "decrypt test data "
+	cout << "prediction "
 
-	<< chrono::duration<double, ratio<1>>(diffr).count() << " s" << endl;
+	<< chrono::duration<double, ratio<60>>(diffr).count() << " min" << endl;
 
 //	// true positive: # of correctly recognized observations for class i
-	int *tp = new int[k];
-	//false positive: # of observations that were incorrectly assigned to the class C i
-	int *fp = new int[k];
-	// false negative: the number of observations that were not recognized as belonging to the class i
-	int *fn = new int[k];
-	// true negative: # of correctly recognized observations that do not belong to the class i
-	int *tn = new int[k];
+	int tp[k] = { 0 };
+//false positive: # of observations that were incorrectly assigned to the class C i
+	int fp[k] = { 0 };
+// false negative: the number of observations that were not recognized as belonging to the class i
+	int fn[k] = { 0 };
+// true negative: # of correctly recognized observations that do not belong to the class i
+	int tn[k] = { 0 };
 
-	for (int i = 0; i < test_col_reg; i++) {
-		double max = predictions_reg_encrypted[i][0];
-//		cout << " 0 " << max << endl;
-		int cl = 0;
-		for (int j = 1; j < k; j++) {
-			if (predictions_reg_encrypted[i][j] > max) {
-				//		cout << j << " " << max << endl;
-				max = predictions_reg_encrypted[i][j];
-				cl = j;
-				//		cout << "pred class " << cl << endl;
-			}
-			if (j == k - 1) {
-				class_prediction[i] = cl;
-				//	cout << "end pred class " << cl << endl;
-			}
-		}
-	}
+// compute accuracy
 	for (int i = 0; i < test_col_reg; i++) {
 		for (int j = 0; j < k; j++) {
-			double max = predictions_reg_encrypted[i][j];
-//		cout << " 0 " << max << endl;
+			double max = act_pred[i][j];
 			if (max < 0.5) {
 				if (resp_test_reg(i) == 0) {
 					if (j == 0) {
@@ -693,67 +606,22 @@ void fun2() {
 		}
 	}
 
-	/*for (int j = 0; j < k; j++) {
-	 for (int i = 0; i < test_col_reg; i++) {
-	 if (predictions_reg_encrypted[i][j] == 0) {
-	 if (resp_test_reg(i) == 0) {
-	 tp[0] += 1;
-	 }
-	 if (resp_test_reg(i) == 1) {
-	 fp[0] += 1;
-	 fn[1] += 1;
-	 }
-	 if (resp_test_reg(i) == 2) {
-	 fp[0] += 1;
-	 fn[2] += 1;
-	 }
-
-	 }
-	 if (predictions_reg_encrypted[i][j] == 1) {
-
-	 if (resp_test_reg(i) == 1) {
-	 tp[1] += 1;
-	 }
-	 if (resp_test_reg(i) == 0) {
-	 fp[1] += 1;
-	 fn[0] += 1;
-	 }
-	 if (resp_test_reg(i) == 2) {
-	 fp[1] += 1;
-	 fn[2] += 1;
-	 }
-	 }
-	 if (predictions_reg_encrypted[i][j] == 2) {
-	 if (resp_test_reg(i) == 2) {
-	 tp[2] += 1;
-	 }
-	 if (resp_test_reg(i) == 1) {
-	 fp[2] += 1;
-	 fn[1] += 1;
-	 }
-	 if (resp_test_reg(i) == 0) {
-	 fp[2] += 1;
-	 fn[0] += 1;
-	 }
-	 }
-	 }
-	 tn[0] = tp[1] + tp[2];
-	 tn[1] = tp[0] + tp[2];
-	 tn[2] = tp[1] + tp[0];
-	 } */
 	int* sum = new int[k];
+	int* nen = new int[k];
 	double* acc = new double[k];
 	for (int i = 0; i < k; i++) {
 		sum[i] = tp[i] + tn[i];
-		acc[i] = (1.0 * sum[i]) / (1.0 * test_col_reg);
-		cout << "accuracy of classifier " << i << " is " << acc[i] << endl;
+		nen[i] = tp[i] + tn[i] + fp[i] + fn[i];
+		acc[i] = (1.0 * sum[i]) / (1.0 * nen[i]);
+		cout << "accuracy of classifier " << i << " is " << acc[i] * 100
+				<< endl;
 	}
 
 }
 
-//uncomment when running linear regression
+// linear regression
 void fun3() {
-	// set parameters for encryption
+// set parameters for encryption
 	seal::EncryptionParameters parms;
 	parms.set_poly_modulus("1x^4096 + 1");
 	parms.set_coeff_modulus(
@@ -762,7 +630,7 @@ void fun3() {
 	parms.set_decomposition_bit_count(58);
 	parms.validate();
 
-	//Generate Keys for encryption
+//Generate Keys for encryption
 	seal::KeyGenerator generator(parms);
 	generator.generate();
 	const seal::BigPolyArray p_key = generator.public_key();
@@ -770,28 +638,33 @@ void fun3() {
 	const seal::BigPoly s_key = generator.secret_key();
 	seal::Plaintext secret_key = seal::Plaintext(s_key);
 
-	// initialize random nubmer generator
+// initialize random nubmer generator
 	random_device rd;
 	mt19937 rng(rd());
 
-	//read in data for classification
-	arma::mat train_dat(9, 601);
-//	arma::mat train_dat(9, 101);
+//read in data for classification
+	arma::mat train_dat(9, 400);
 	arma::vec resp_train;
 	arma::mat test_dat;
 	arma::vec resp_test;
+//	arma::mat train_dat(9, 400);
+//	arma::mat resp_train;
+//	arma::mat test_dat;
+//	arma::mat resp_test;
+//	data::Load("test_reg2.csv", test_dat);
+//	data::Load("train_reg2.csv", train_dat);
+//	data::Load("test_reg_tr2.csv", resp_test);
+//	data::Load("train_reg_tr2.csv", resp_train);
 	data::Load("abalone.csv", test_dat);
-
+//  split training and testing set and extract the target variable
 	int i = 0;
-	while (i < 601) {
-//	while (i < 101) {
+	while (i < 400) {
 		uniform_int_distribution<int> uni(0, 4176 - i);
 		int random_integer = uni(rng);
 
 		if (random_integer != 8) {
 			for (int j = 0; j < 9; j++) {
 				double tmp = test_dat(j, random_integer);
-				//cout << "fine" << endl;
 				train_dat(j, i) = tmp;
 			}
 
@@ -799,58 +672,42 @@ void fun3() {
 			i++;
 		}
 	}
-
-//	for (int i = 0; i < 1301; i++) {
-//		uniform_int_distribution<int> uni(0, 4177 - i);
-//		int random_integer = uni(rng);
-//		cout << i << " and " << random_integer << endl;
-//		for (int j = 0; j < 9; j++) {
-//			double tmp = test_dat(j, random_integer);
-//			//		cout << "fine" << endl;
-//			train_dat(j, i) = tmp;
-//		}
-//		//	cout << "before shed" << endl;
-//		test_dat.shed_col(random_integer);
-//	}
 	arma::mat tmp = train_dat.t();
 
 	arma::mat tmp2 = test_dat.t();
 	resp_train = tmp.col(8);	// label of train data
 	resp_test = tmp2.col(8);
+
 	train_dat.shed_row(train_dat.n_rows - 1);
 	train_dat.shed_row(0);
 	test_dat.shed_row(0);
 	test_dat.shed_row(test_dat.n_rows - 1);
-	data::Save("test_reg.csv", test_dat);
-	data::Save("train_reg.csv", train_dat);
-	data::Save("test_reg_tr.csv", resp_test);
-	data::Save("train_reg_tr.csv", resp_test);
+// save training and testing set in respective files
+	data::Save("test_reg_ridge.csv", test_dat);
+	data::Save("train_reg_ridge.csv", train_dat);
+	data::Save("test_reg_tr_ridge.csv", resp_test);
+	data::Save("train_reg_tr_ridge.csv", resp_train);
 
-	//number of columns and rows for training and test set
+//number of columns and rows for training and test set
 	int train_col = static_cast<int>(train_dat.n_cols);
 	int train_row = static_cast<int>(train_dat.n_rows);
 	int test_col = static_cast<int>(test_dat.n_cols);
 	int test_row = static_cast<int>(test_dat.n_rows);
-
-	// generate keys in order to relinearize ciphertexts
+// generate keys in order to relinearize ciphertexts
 	generator.generate_evaluation_keys(25);
 	const seal::EvaluationKeys evkey = generator.evaluation_keys();
 	seal::FractionalEncoder frencoder(parms.plain_modulus(),
 			parms.poly_modulus(), 64, 32, 3);
 	seal::IntegerEncoder encoder(parms.plain_modulus());
 	seal::Evaluator evaluate(parms, evkey);
-	//seal::Evaluator evaluate(par);
+//seal::Evaluator evaluate(par);
 	seal::Encryptor encryptor(parms, p_key);
 	seal::Decryptor decryptor(parms, s_key);
 
-	// encoding and encrpypting the polynomials
-	seal::Ciphertext **encoded_train = new seal::Ciphertext *[train_col];
-
-	//const seal::EncryptionParameters par = parms;
-
 	// encrypt the given data
-
-//  encrypt train data
+	seal::Ciphertext **encoded_train = new seal::Ciphertext *[train_col];
+//	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
+	//  encrypt train data
 	auto start = chrono::steady_clock::now();
 
 	seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
@@ -884,11 +741,10 @@ void fun3() {
 			<< chrono::duration<double, ratio<1>>(diffr).count() << " s"
 			<< endl;
 
-	// encrypt test labels
-
-	seal::Ciphertext *test_resp = new seal::Ciphertext[251];
+// encrypt test labels
+	seal::Ciphertext *test_resp = new seal::Ciphertext[200];
 	start = chrono::steady_clock::now();
-	for (int i = 0; i < 251; i++) {
+	for (int i = 0; i < 200; i++) {
 		test_resp[i] = encrypt_frac(resp_test(i), encryptor, frencoder);
 	}
 	end = chrono::steady_clock::now();
@@ -897,10 +753,11 @@ void fun3() {
 			<< chrono::duration<double, ratio<60>>(diffr).count() << " min"
 			<< endl;
 
+	// encrypt test data
 	seal::Ciphertext **encoded_test = new seal::Ciphertext *[test_col];
 
 	start = chrono::steady_clock::now();
-	for (int i = 0; i < 251; i++) {
+	for (int i = 0; i < 200; i++) {
 		encoded_test[i] = new seal::Ciphertext[test_row + 1];
 		encoded_test[i][0] = one_encrypt;
 		for (int j = 1; j <= test_row; j++) {
@@ -914,80 +771,101 @@ void fun3() {
 			<< chrono::duration<double, ratio<60>>(diffr).count() << " min"
 			<< endl;
 
-	//learning rate alpha = 0.32
+	// initialize constnts for training, e.g. learning rate and regularization coefficient
 	double alph = 0.032 / train_col;
 	seal::Plaintext alpha = frencoder.encode(alph);
-	//	constant (1.0 / (2 * n_col)
+//	text: constant (1.0 / (2 * n_col)
 	seal::Plaintext text = frencoder.encode((1.0 / (2.0 * train_col)));
-	// seal::Ciphertext one_encrypt = encrypt_frac(1.0, encryptor, frencoder);
 	double lambda = 1.5 / (1.0 * train_col);
 	seal::Plaintext lambda_div = frencoder.encode(lambda);
-	// initialize the weights
+
+// initialize the weights theta
 	seal::Ciphertext **theta = new seal::Ciphertext *[train_row + 1];
 	for (int i = 0; i <= train_row; i++) {
 		theta[i] = new seal::Ciphertext[1];
 		theta[i][0] = one_encrypt;
 
 	}
-// for (int i = 0; i <= 7; i++) {
-// theta[i] = new seal::Ciphertext[1];
-// //cout << i << endl;
-// }
-// theta[0][0] = encrypt_frac(1.913, encryptor, frencoder);
-// //	cout << "theta fine" << endl;
-// theta[1][0] = encrypt_frac(10.813, encryptor, frencoder);
-// //	cout << "theta fine" << endl;
-// theta[2][0] = encrypt_frac(4.175, encryptor, frencoder);
-// //cout << "theta fine" << endl;
-// theta[3][0] = encrypt_frac(-1.36, encryptor, frencoder);
-// //	cout << "theta fine" << endl;
-// theta[4][0] = encrypt_frac(8.053, encryptor, frencoder);
-// //	cout << "theta fine" << endl;
-// theta[5][0] = encrypt_frac(-7.258, encryptor, frencoder);
-// //	cout << "theta fine" << endl;
-// theta[6][0] = encrypt_frac(-4.66, encryptor, frencoder);
-// //cout << "theta fine" << endl;
-// theta[7][0] = encrypt_frac(4.58, encryptor, frencoder);
-// cout << "theta fine" << endl;
-	bool ridge = false;
+//ridge
+	/*	theta[0][0] = encrypt_frac(1.00052, encryptor, frencoder);
+	 //	cout << "theta fine" << endl;
+	 theta[1][0] = encrypt_frac(1.00036, encryptor, frencoder);
+	 //	cout << "theta fine" << endl;
+	 theta[2][0] = encrypt_frac(1.00018, encryptor, frencoder);
+	 //cout << "theta fine" << endl;
+	 theta[3][0] = encrypt_frac(1.00018, encryptor, frencoder);
+	 //	cout << "theta fine" << endl;
+	 theta[4][0] = encrypt_frac(1.00055, encryptor, frencoder);
+	 //	cout << "theta fine" << endl;
+	 theta[5][0] = encrypt_frac(1.00014, encryptor, frencoder);
+	 //	cout << "theta fine" << endl;
+	 theta[6][0] = encrypt_frac(1.0001, encryptor, frencoder);
+	 //cout << "theta fine" << endl;
+	 theta[7][0] = encrypt_frac(1.00017, encryptor, frencoder);
+	 cout << "theta fine" << endl; */
 
+	// simple
+//	theta[0][0] = encrypt_frac(1.00038, encryptor, frencoder);
+//	//	cout << "theta fine" << endl;
+//	theta[1][0] = encrypt_frac(1.00027, encryptor, frencoder);
+//	//	cout << "theta fine" << endl;
+//	theta[2][0] = encrypt_frac(1.00023, encryptor, frencoder);
+//	//cout << "theta fine" << endl;
+//	theta[3][0] = encrypt_frac(1.00011, encryptor, frencoder);
+//	//	cout << "theta fine" << endl;
+//	theta[4][0] = encrypt_frac(1.00053, encryptor, frencoder);
+//	//	cout << "theta fine" << endl;
+//	theta[5][0] = encrypt_frac(1.00026, encryptor, frencoder);
+//	//	cout << "theta fine" << endl;
+//	theta[6][0] = encrypt_frac(1.00008, encryptor, frencoder);
+//	//cout << "theta fine" << endl;
+//	theta[7][0] = encrypt_frac(1.00015, encryptor, frencoder);
+//	cout << "theta fine" << endl;
+// set true for ridge regression and false for simple regression
+	bool ridge = true;
+
+	// train the regression model
 	OwnLinearRegression linreg;
 	start = chrono::steady_clock::now();
-	// train the linear regression model
+// train the linear regression model
 	seal::Ciphertext **weights = new seal::Ciphertext*[train_row + 1];
-	weights = linreg.train(alpha, 3, train_col, encoded_train, train_resp,
+	weights = linreg.train(alpha, 4, train_col, encoded_train, train_resp,
 			theta, train_row, text, evaluate, ridge, lambda_div);
 	end = chrono::steady_clock::now();
 	diffr = end - start;
 	cout << "train " << chrono::duration<double, ratio<60>>(diffr).count()
 			<< " min" << endl;
-	//	delete pre - initialized theta
-// 	delete[] theta[0];
-// 	delete[] theta;
 	for (int i = 0; i <= train_row; i++) {
 		cout << decrypt_frac(theta[i][0], decryptor, frencoder) << endl;
+
 	}
-	//make predicitons on test data set
+
+//	delete pre - initialized theta
+// 	delete[] theta[0];
+// 	delete[] theta;
+
+//make predicitons on test data set
 	start = chrono::steady_clock::now();
-	seal::Ciphertext *pred = linreg.predict(test_row, 251, encoded_test,
-			weights, evaluate);
+	seal::Ciphertext *pred = linreg.predict(test_row, 200, encoded_test, weights,
+			evaluate);
+
 	end = chrono::steady_clock::now();
 	diffr = end - start;
 	cout << "pred " << chrono::duration<double, ratio<60>>(diffr).count()
 			<< " min" << endl;
 	double *dec = new double[test_col];
-	// later: compare prediction on unencrypted and encrypted data
 
+// compute Mean Squared Error
 	start = chrono::steady_clock::now();
 	double MSE = 0;
-	for (int i = 0; i < 251; i++) {
+	for (int i = 0; i < 200; i++) {
 		double d = decrypt_frac((*(pred + i)), decryptor, frencoder);
 		dec[i] = d;
 		cout << dec[i] << " actual " << resp_test(i) << endl;
 		double tmp = (dec[i] - resp_test(i));
 		MSE += pow(tmp, 2);
 	}
-	cout << " Means squared error " << MSE / (100 * 1.0) << endl;
+	cout << " Means squared error " << MSE / (100.0) << endl;
 	end = chrono::steady_clock::now();
 	diffr = end - start;
 	cout << "decryption " << chrono::duration<double, ratio<60>>(diffr).count()
@@ -995,11 +873,11 @@ void fun3() {
 }
 
 int main() {
-	// binary logistic regression
-	//fun1();
+// binary logistic regression
+//fun1();
 //multiclass logistic regression
-	// fun2();
-	//linear regression
+//	fun2();
+//linear regression
 	fun3();
 
 	return 0;
