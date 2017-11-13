@@ -822,7 +822,7 @@ void fun3() {
 //	theta[7][0] = encrypt_frac(1.00015, encryptor, frencoder);
 //	cout << "theta fine" << endl;
 // set true for ridge regression and false for simple regression
-	bool ridge = true;
+	bool ridge = false;
 
 	// train the regression model
 	OwnLinearRegression linreg;
@@ -836,7 +836,7 @@ void fun3() {
 	cout << "train " << chrono::duration<double, ratio<60>>(diffr).count()
 			<< " min" << endl;
 	for (int i = 0; i <= train_row; i++) {
-		cout << decrypt_frac(theta[i][0], decryptor, frencoder) << endl;
+		cout << decrypt_frac(weights[i][0], decryptor, frencoder) << endl;
 
 	}
 
