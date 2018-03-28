@@ -4,6 +4,7 @@
 #include "modulus.h"
 #include "uintcore.h"
 #include "uintarith.h"
+#include "../utilities.h"
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 #include <cstring>
 //#include "util/mempool.h"
 #include "mempool.h"
-
+#include "../utilities.h"
 using namespace std;
 
 namespace seal

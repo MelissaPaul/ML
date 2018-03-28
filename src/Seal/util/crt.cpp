@@ -7,6 +7,9 @@
 #include "uintarith.h"
 #include "uintarithmod.h"
 
+
+#include "../memorypoolhandle.h"
+#include "../utilities.h"
 using namespace std;
 
 namespace seal

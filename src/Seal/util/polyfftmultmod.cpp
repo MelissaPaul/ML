@@ -15,6 +15,9 @@
 #include "polyarithmod.h"
 #include "polyarith.h"
 
+//own inclusion
+#include "../utilities.h"
+
 using namespace std;
 
 namespace seal

@@ -4,6 +4,8 @@
 #include "polymodulus.h"
 #include "uintcore.h"
 #include "polyarith.h"
+// own inclusion
+#include "../utilities.h"
 
 using namespace std;
 

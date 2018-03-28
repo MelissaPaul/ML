@@ -7,6 +7,9 @@
 #include "uintarith.h"
 #include "polyarith.h"
 
+//own inclusion
+#include "../utilities.h"
+
 #include <algorithm>
 
 using namespace std;

@@ -6,8 +6,10 @@
 #include "polyarith.h"
 #include "uintarith.h"
 #include "modulus.h"
-
 #include <algorithm>
+
+//own inclusion
+#include "../memorypoolhandle.h"
 
 using namespace std;
 

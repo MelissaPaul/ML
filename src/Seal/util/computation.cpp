@@ -1,7 +1,8 @@
 #include <stdexcept>
 //#include "util/computation.h"
 #include "computation.h"
-
+//own inclusion
+#include "../encryptionparams.h"
 using namespace seal;
 using namespace std;
 
