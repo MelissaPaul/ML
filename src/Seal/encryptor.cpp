@@ -11,6 +11,10 @@
 #include "util/ntt.h"
 #include "bigpoly.h"
 
+//own inclusion
+#include "bigpolyarray.h"
+#include "encryptionparams.h"
+
 using namespace std;
 using namespace seal::util;
 

@@ -5,6 +5,9 @@
 #include "util/polyarith.h"
 #include <cmath>
 
+
+#include "encryptionparams.h"
+
 using namespace std;
 using namespace seal::util;
 

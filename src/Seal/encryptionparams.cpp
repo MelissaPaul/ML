@@ -6,6 +6,10 @@
 #include "util/polymodulus.h"
 #include <stdexcept>
 
+
+//own inclusion
+#include "seal.h"
+
 using namespace std;
 using namespace seal::util;
 

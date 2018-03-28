@@ -9,6 +9,9 @@
 #include <stdexcept>
 #include <random>
 
+#include "encryptionparams.h"
+#include "utilities.h"
+
 using namespace std;
 using namespace seal::util;
 

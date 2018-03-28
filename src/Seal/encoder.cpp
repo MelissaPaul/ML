@@ -5,7 +5,8 @@
 #include "util/common.h"
 #include "util/uintarith.h"
 #include "util/polyarith.h"
-
+//own inclusion
+#include "memorypoolhandle.h"
 using namespace std;
 using namespace seal::util;
 

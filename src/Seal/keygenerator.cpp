@@ -13,6 +13,8 @@
 #include "util/polycore.h"
 #include "util/ntt.h"
 
+#include "encryptionparams.h"
+
 using namespace std;
 using namespace seal::util;
 

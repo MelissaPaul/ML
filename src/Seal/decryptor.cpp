@@ -12,6 +12,10 @@
 #include "util/uintarithmod.h"
 #include "util/polyextras.h"
 
+
+//own inclusion
+#include "memorypoolhandle.h"
+
 using namespace std;
 using namespace seal::util;
 

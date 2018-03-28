@@ -13,6 +13,11 @@
 #include "bigpoly.h"
 #include "util/ntt.h"
 
+//self included
+#include "util/polymodulus.h"
+#include "encryptionparams.h"
+#include "evaluationkeys.h"
+
 using namespace std;
 using namespace seal::util;
 

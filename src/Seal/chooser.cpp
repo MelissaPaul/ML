@@ -7,6 +7,10 @@
 #include "util/uintarith.h"
 #include "util/uintextras.h"
 
+
+//own inclusion
+#include "seal.h"
+
 using namespace std;
 using namespace seal::util;
 
